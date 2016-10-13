@@ -4,6 +4,7 @@ board([[x, x, x],
 
 % Adicionar coordenadas
 
+translate(s10, '          ').
 translate(s8, '        ').
 translate(s7, '       ').
 translate(s6, '      ').
@@ -42,7 +43,8 @@ display_line_1_aux(NumberHexagons):-
     display_line_1_aux(N1).
 
 display_line_1(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s7, NumberEmptySpaces),
+    generate_empty_space(s7, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     display_line_1_aux(NumberHexagons).
 
 display_line_2_aux(N):-
@@ -62,7 +64,8 @@ display_line_2_aux(N):-
     display_line_2_aux(N1).
 
 display_line_2(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s6, NumberEmptySpaces),
+    generate_empty_space(s6, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     display_line_2_aux(NumberHexagons).
 
 display_line_3_aux(N):-
@@ -82,7 +85,8 @@ display_line_3_aux(N):-
     display_line_3_aux(N1).
 
 display_line_3(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s2, NumberEmptySpaces),
+    generate_empty_space(s2, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     display_line_3_aux(NumberHexagons).
 
 
@@ -106,7 +110,8 @@ display_line_4_aux(NumberHexagons):-
     display_line_4_aux(N1).
 
 display_line_4(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s1, NumberEmptySpaces),
+    generate_empty_space(s1, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     translate(ub, OpenHex),
     translate(s3, SpaceInsideHex),
     translate(db, CloseHex),
@@ -135,7 +140,8 @@ display_line_5_aux(NumberHexagons):-
     display_line_5_aux(N1).
 
 display_line_5(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s0, NumberEmptySpaces),
+    generate_empty_space(s0, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     translate(ub, OpenHex),
     translate(s5, SpaceInsideHex),
     translate(db, CloseHex),
@@ -165,7 +171,8 @@ display_line_6_aux(NumberHexagons):-
     display_line_6_aux(N1).
 
 display_line_6(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s0, NumberEmptySpaces),
+    generate_empty_space(s0, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     translate(ub, OpenHex),
     translate(s5, SpaceInsideHex),
     translate(db, CloseHex),
@@ -195,7 +202,8 @@ display_line_7_aux(NumberHexagons):-
     display_line_7_aux(N1).
 
 display_line_7(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s1, NumberEmptySpaces),
+    generate_empty_space(s1, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     translate(db, CloseHex),
     write(CloseHex),
     display_line_7_aux(NumberHexagons).
@@ -221,7 +229,8 @@ display_line_8_aux(N):-
     display_line_8_aux(N1).
 
 display_line_8(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s5, NumberEmptySpaces),
+    generate_empty_space(s5, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     display_line_8_aux(NumberHexagons).
 
 
@@ -246,7 +255,8 @@ display_line_9_aux(N):-
     display_line_9_aux(N1).
 
 display_line_9(NumberEmptySpaces, NumberHexagons):-
-    generate_empty_space(s6, NumberEmptySpaces),
+    generate_empty_space(s6, 1),
+    generate_empty_space(s10, NumberEmptySpaces),
     display_line_9_aux(NumberHexagons).
 
 
@@ -257,20 +267,26 @@ display_num_linhas(N):-
 
 display_num_linhas(NumLinhasAdicionais):-
     N1 is NumLinhasAdicionais - 1,
-    display_line_4(1, 4),
-    display_line_5(1, 4),
-    display_line_6(1, 4),
-    display_line_7(1, 4),
+    display_line_4(0, 4),
+    display_line_5(0, 4),
+    display_line_6(0, 4),
+    display_line_7(0, 4),
     display_num_linhas(N1).
 
 
 
+display_start_lines:-
+    display_line_1(0, 4),
+    display_line_2(0, 4),
+    display_line_3(0, 4).
+
+display_end_lines:-
+    display_line_8(0, 4),
+    display_line_9(0, 4).
+
 display_board:-
-    display_line_1(1, 4),
-    display_line_2(1, 4),
-    display_line_3(1, 4),
+    display_start_lines,
     display_num_linhas(10),
-    display_line_8(1, 4),
-    display_line_9(1, 4).
+    display_end_lines.
 
 display:- display_board.
