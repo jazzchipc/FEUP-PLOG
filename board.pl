@@ -1,14 +1,4 @@
-board([ [sssss, t, sssss, t],
-        [ssss, ub, sl, db, sss, ub, sl, db],
-        [ss, t, ub, sl, c, sl, db, t, ub, sl, x, sl, db, t],
-        [sl, ub, sl, db, sss, ub, sl, db, sss, ub, sl, db],
-        [ub, sss, db, t, ub, sss, db, t, ub, sss, db],
-        [db, sss, ub, sl, db, sss, ub, sl, db, sss, ub],
-        [sl, db, t, ub, sss, db, t, ub, sss, db, t, ub],
-        [sss, db, sss, ub, sl, db, sss, ub],
-        [ssss, db, t, ub, sss, db, t, ub]]).
-
-boardT([[x, x, x],
+board([[x, x, x],
         [x, x],
         [x, x, x]]).
 
@@ -27,7 +17,6 @@ translate(ub, '/').
 translate(db, '\\').
 translate(nl, '\n').
 translate(c, '1').
-
 translate(x, '').
 
 generate_empty_space(Spaces, NumberOfTimes):-
@@ -262,21 +251,26 @@ display_line_9(NumberEmptySpaces, NumberHexagons):-
 
 
 
-display_board(N):-
+display_num_linhas(N):-
     N = 0,
-    nl.
+    write('').
 
-display_board(N):-
-    N1 is N - 1,
-    display_line_1(1, 4),
-    display_line_2(1, 4),
-    display_line_3(1, 4),
+display_num_linhas(NumLinhasAdicionais):-
+    N1 is NumLinhasAdicionais - 1,
     display_line_4(1, 4),
     display_line_5(1, 4),
     display_line_6(1, 4),
     display_line_7(1, 4),
-    display_line_8(1, 4),
-    display_line_9(1, 4),
-    display_board(N1).
+    display_num_linhas(N1).
 
-display:- display_board(2).
+
+
+display_board:-
+    display_line_1(1, 4),
+    display_line_2(1, 4),
+    display_line_3(1, 4),
+    display_num_linhas(10),
+    display_line_8(1, 4),
+    display_line_9(1, 4).
+
+display:- display_board.
