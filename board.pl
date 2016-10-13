@@ -1,3 +1,52 @@
+%%% Case example: [<type>, <owner>, [<listOfShips], <building>]
+
+/* TYPES OF CASE 
+h - home system
+b - blackhole
+c - wormhole
+l1 - level one system (1 point)
+l2 - level two system (2 points)
+l3 - level three system (3 points)
+n - nebula (5 points)
+*/
+
+/* OWNER
+1 - player one
+2 - player two
+*/
+
+/* LIST OF SHIPS
+Player one: ABCD or abcd (damaged)
+Player two: WXYZ or wxyz (damaged)
+*/
+
+/* BUILDING
+t - trade station
+c - colony
+n - none
+*/
+
+case_example([h, 1, ['A', 'B', 'C', 'D'], n]).
+
+display_ships([]).
+
+display_ships([S1|Ss]):-
+    write(S1),
+    display_ships(Ss).
+
+display_case([]):-
+    nl.
+
+display_case([C1|[C2|[C3|[C4|[]]]]] ):-
+    write(C1), nl,
+    write(C2), nl,
+    display_ships(C3), nl,
+    write(C4).
+
+test_display_case:-
+    case_example(C), display_case(C).
+
+
 board([[x, x, x],
         [x, x],
         [x, x, x]]).
