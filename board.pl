@@ -26,25 +26,70 @@ c - colony
 n - none
 */
 
+/* UTILITIES */
+
+prefix([],Ys).
+prefix([X|Xs], [X|Ys]):- prefix(Xs,Ys).
+
+sufix(Xs, Xs).
+sufix(Xs, [Y|Ys]):- suffix(Xs, Ys).
+
+sublist(Xs, Ys):- prefix(Xs, Ys).
+sublist(Xs, [Y|Ys]):- sublist(Xs,Ys).
+
+length([],0);
+length([X|Xs], s(N)):- length(Xs, N).
+
+/* END OF UTILITIES */
+
+
+/* DISPLAY GAME CASE FUNCTIONS*/ 
+
+%Verify errors example function
+
+isTypeOfCase(C):-
+    C == h;
+    C == b;
+    C == c;
+    C == l1;
+    C == l2;
+    C == l3;
+    C == n.
+
 case_example([h, 1, ['A', 'B', 'C', 'D'], n]).
 
-display_ships([]).
+board_example([
+    [h, 1, ['A', 'B', 'C', 'D'], n], [], [h, 2, ['W', 'X', 'Y', 'Z'], n]
+]).
 
-display_ships([S1|Ss]):-
-    write(S1),
-    display_ships(Ss).
+display_list([]).
 
-display_case([]):-
-    nl.
+display_list([E1|Es]):-
+    write(E1),
+    display_list(Es).
 
-display_case([C1|[C2|[C3|[C4|[]]]]] ):-
-    write(C1), nl,
-    write(C2), nl,
-    display_ships(C3), nl,
-    write(C4).
+display_type([C,_,_,_|_]):- write(C).
 
-test_display_case:-
-    case_example(C), display_case(C).
+display_owner([_,O,_,_|_]):- write(O).
+
+display_ships([_,_,S,_|_]):- display_list(S).
+
+display_building([_,_,_,B|_]):- write(B).
+
+display_board_case([]).
+
+display_board_case(C):-
+    display_type(C),
+    display_owner(C),
+    display_ships(C),
+    display_building(C).
+
+display_board_test([B1|Bs]):-
+    display_board_case(B1),
+    display_board_test(Bs).
+
+test_display_board:-
+    board_example(B), display_board_test(B).
 
 
 board([[x, x, x],
