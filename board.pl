@@ -408,8 +408,9 @@ display_end_lines:-
     display_line_9(0, 4).
 
 display_board:-
+    length(B, NumOfRows), board(B),
     display_start_lines,
-    display_num_linhas(10),
+    display_num_linhas(NumOfRows//2),
     display_end_lines.
 
 display:- display_board.
