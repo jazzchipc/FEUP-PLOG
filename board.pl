@@ -40,6 +40,15 @@ sublist(Xs, [Y|Ys]):- sublist(Xs,Ys).
 length([],0);
 length([X|Xs], s(N)):- length(Xs, N).
 
+lists([], []).
+
+lists([[L1|_]|Lists]), [L1|L]:-
+    lists(Lists,L).
+
+lists([[_,L1|Ls]|Lists], L):-
+    lists([[L1|Ls]|Lists], L).
+
+/*lists: That is, take the first element of the first list in your input list and continue recursively with the remaining lists. As a second chance, skip that element and redo with the remaining elements.*/
 /* END OF UTILITIES */
 
 
@@ -59,7 +68,7 @@ isTypeOfCase(C):-
 case_example([h, 1, ['A', 'B', 'C', 'D'], n]).
 
 board_example([
-    [h, 1, ['A', 'B', 'C', 'D'], n], [], [h, 2, ['W', 'X', 'Y', 'Z'], n]
+    [h, 1, ['A', 'B', 'C', 'D'], n], x, [h, 2, ['W', 'X', 'Y', 'Z'], n]
 ]).
 
 display_list([]).
@@ -76,6 +85,9 @@ display_ships([_,_,S,_|_]):- display_list(S).
 
 display_building([_,_,_,B|_]):- write(B).
 
+empty_case(C):-
+    C==x.
+
 display_board_case([]).
 
 display_board_case(C):-
@@ -84,6 +96,21 @@ display_board_case(C):-
     display_ships(C),
     display_building(C).
 
+display_board_case_coord(B,0,0):-
+    display_board_case(C).
+
+display_board_case_coord(B,X,Y):-
+    X > 0,
+    Y > 0.
+
+write_board_coord([B1|Bs], X, Y):-
+    X == 0 -> write_row_element(B1, Y);
+    X > 0 -> X1 is X-1, write_board_coord(Bs, X1, Y).
+
+write_row_element([R1|Rs], Y):-
+    Y == 0 -> display_board_case(R1);
+    Y > 0 -> Y1 is Y-1, write_row_element(Rs, Y1).
+
 display_board_test([B1|Bs]):-
     display_board_case(B1),
     display_board_test(Bs).
@@ -91,10 +118,12 @@ display_board_test([B1|Bs]):-
 test_display_board:-
     board_example(B), display_board_test(B).
 
-
-board([[x, x, x],
-        [x, x],
-        [x, x, x]]).
+/* Each element of the board is a line. Each element within the line is a piece.*/
+board([
+    [[h, 1, ['A', 'B', 'C', 'D'], n], x, x],
+    [x, x, x],
+    [x, x, [h, 2, ['W', 'X', 'Y', 'Z'], n]]]
+    ).
 
 % Adicionar coordenadas
 
