@@ -26,6 +26,22 @@ c - colony
 n - none
 */
 
+translate(s10, '          ').
+translate(s8, '        ').
+translate(s7, '       ').
+translate(s6, '      ').
+translate(s5, '     ').
+translate(s3, '   ').
+translate(s2, '  ').
+translate(s1, ' ').
+translate(s0, '').
+translate(t, '___').
+translate(ub, '/').
+translate(db, '\\').
+translate(nl, '\n').
+translate(c, '1').
+translate(x, '').
+
 /* UTILITIES */
 
 prefix([],Ys).
@@ -73,24 +89,36 @@ display_list([E1|Es]):-
     write(E1),
     display_list(Es).
 
+getLine(X, [_|Xs], N):-
+    N == 1 ->
+        write('');
+    N == 0 ->
+        N1 is N+1,
+        getline(X, Xs, N1).
+    
+
+
 /* These next functions add space to fill the hexagon awhile displaying information */
 
+display_type(X):-
+    translate(X, FreeHouse),
+    write(FreeHouse).
+
 display_type([C,_,_,_|_]):-
-    translate(s1, S),
-    write(S),
-    write(C),
-    write(S).
+    write(C).
+
+display_owner(X):-
+    translate(X, FreeHouse),
+    write(FreeHouse).
 
 display_owner([_,O,_,_|_]):- 
-    translate(s2, S),
-    write(S),
-    write(O),
-    write(S).
+    write(O).
+
+display_ships(X):-
+    translate(X, FreeHouse),
+    write(FreeHouse).
 
 display_ships([_,_,S,_|_]):- 
-    length(S, L),
-    L1 is 5-L,
-    generate_empty_space(s1, L1),
     display_list(S).
 
 display_building([_,_,_,B|_]):- 
@@ -171,26 +199,10 @@ test_display_board:-
 
 /* Each element of the board is a line. Each element within the line is a piece.*/
 board([
-    [[h, 1, ['A', 'D'], n], x, x],
+    [[h, 1, ['A', 'D'], n], [b, 1, ['A', 'B', 'C', 'D'], n], x],
     [[h, 1, ['A', 'B', 'C', 'D'], n], x, x],
     [x, x, [h, 2, ['W', 'X', 'Y', 'Z'], n]]]
     ).
-
-translate(s10, '          ').
-translate(s8, '        ').
-translate(s7, '       ').
-translate(s6, '      ').
-translate(s5, '     ').
-translate(s3, '   ').
-translate(s2, '  ').
-translate(s1, ' ').
-translate(s0, '').
-translate(t, '___').
-translate(ub, '/').
-translate(db, '\\').
-translate(nl, '\n').
-translate(c, '1').
-translate(x, '').
 
 generate_empty_space(Spaces, NumberOfTimes):-
     NumberOfTimes = 0,
@@ -217,47 +229,54 @@ display_line_1(NumberEmptySpaces, NumberHexagons):-
     generate_empty_space(s10, NumberEmptySpaces),
     display_line_1_aux(NumberHexagons).
 
-display_line_2_aux(NumberHexagons):-
+getCurrentPiece([X|Xs], X, Xs).
+
+display_line_2_aux(NumberHexagons, FirstRow):-
     NumberHexagons > 0 ->
         N1 is NumberHexagons-1,
+        getCurrentPiece(FirstRow, CurrentPiece, RemainingPieces),
         translate(ub, OpenHex),
         translate(s3, SpaceInsideHex),
         translate(db, CloseHex),
         translate(s5, SpaceBetweenHex),
         write(OpenHex),
+        display_type(CurrentPiece),
         write(SpaceInsideHex),
         write(CloseHex),
         write(SpaceBetweenHex),
-        display_line_2_aux(N1);
+        display_line_2_aux(N1, RemainingPieces);
     NumberHexagons == 0 -> nl.
 
-display_line_2(NumberEmptySpaces, NumberHexagons):-
+display_line_2(NumberEmptySpaces, NumberHexagons, FirstRow):-
     generate_empty_space(s6, 1),
     generate_empty_space(s10, NumberEmptySpaces),
-    display_line_2_aux(NumberHexagons).
+    display_line_2_aux(NumberHexagons, FirstRow).
 
-display_line_3_aux(NumberHexagons):-
+display_line_3_aux(NumberHexagons, FirstRow):-
     NumberHexagons > 0 ->
         N1 is NumberHexagons-1,
+        getCurrentPiece(FirstRow, CurrentPiece, RemainingPieces),
         translate(t, A),
         translate(ub, OpenHex),
         translate(s5, SpaceInsideHex),
         translate(db, CloseHex),
         write(A),
         write(OpenHex),
+        display_owner(CurrentPiece),
         write(SpaceInsideHex),
         write(CloseHex),
-        display_line_3_aux(N1);
+        display_line_3_aux(N1, RemainingPieces);
     NumberHexagons == 0 -> nl.
 
-display_line_3(NumberEmptySpaces, NumberHexagons):-
+display_line_3(NumberEmptySpaces, NumberHexagons, FirstRow):-
     generate_empty_space(s2, 1),
     generate_empty_space(s10, NumberEmptySpaces),
-    display_line_3_aux(NumberHexagons).
+    display_line_3_aux(NumberHexagons, FirstRow).
 
 display_line_4_aux(NumberHexagons):-
     NumberHexagons > 0 ->
         N1 is NumberHexagons - 1,
+        % getLine(Current),
         translate(ub, OpenHex),
         translate(s3, SpaceInsideHex),
         translate(db, CloseHex),
@@ -387,24 +406,20 @@ display_line_9(NumberEmptySpaces, NumberHexagons):-
     generate_empty_space(s10, NumberEmptySpaces),
     display_line_9_aux(NumberHexagons).
 
-display_num_linhas(N):-
-    N = 0,
-    write('').
-
 display_num_linhas(NumLinhasAdicionais, NumOfCols):-
-    N1 is NumLinhasAdicionais - 1,
-    display_line_4(0, NumOfCols),
-    display_line_5(0, NumOfCols),
-    display_line_6(0, NumOfCols),
-    display_line_7(0, NumOfCols),
-    display_num_linhas(N1).
+    NumLinhasAdicionais > 0 ->
+        N1 is NumLinhasAdicionais - 1,
+        display_line_4(0, NumOfCols),
+        display_line_5(0, NumOfCols),
+        display_line_6(0, NumOfCols),
+        display_line_7(0, NumOfCols),
+        display_num_linhas(N1);
+    NumLinhasAdicionais == 0 -> write('').
 
-
-
-display_start_lines(NumOfCols):-
+display_start_lines(NumOfCols, FirstRow):-
     display_line_1(0, NumOfCols),
-    display_line_2(0, NumOfCols),
-    display_line_3(0, NumOfCols).
+    display_line_2(0, NumOfCols, FirstRow),
+    display_line_3(0, NumOfCols, FirstRow).
 
 display_end_lines(NumOfCols):-
     display_line_8(0, NumOfCols),
@@ -420,7 +435,7 @@ display_board:-
     last(LastRow, B),
     length(LastRow, NumOfElementsLastRow),
 
-    display_start_lines(NumOfElementsFirstRow),
+    display_start_lines(NumOfElementsFirstRow, FirstRow),
     display_num_linhas(NumOfRows//2 , NumOfElementsFirstRow),
     display_end_lines(NumOfElementsLastRow).
 
