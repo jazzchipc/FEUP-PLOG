@@ -77,13 +77,31 @@ display_list([E1|Es]):-
     write(E1),
     display_list(Es).
 
-display_type([C,_,_,_|_]):- write(C).
+/* These next functions add space to fill the hexagon awhile displaying information */
 
-display_owner([_,O,_,_|_]):- write(O).
+display_type([C,_,_,_|_]):-
+    translate(s1, S),
+    write(S),
+    write(C),
+    write(S).
 
-display_ships([_,_,S,_|_]):- display_list(S).
+display_owner([_,O,_,_|_]):- 
+    translate(s2, S),
+    write(S),
+    write(O),
+    write(S).
 
-display_building([_,_,_,B|_]):- write(B).
+display_ships([_,_,S,_|_]):- 
+    length(S, L),
+    L1 is 5-L,
+    generate_empty_space(s1, L1),
+    display_list(S).
+
+display_building([_,_,_,B|_]):- 
+    translate(s1, S),
+    write(S),
+    write(B),
+    write(S).
 
 empty_case(C):-
     C==x.
@@ -96,20 +114,57 @@ display_board_case(C):-
     display_ships(C),
     display_building(C).
 
-display_board_case_coord(B,0,0):-
-    display_board_case(C).
+/*** WRITE FUNCTIONS ***/
 
-display_board_case_coord(B,X,Y):-
-    X > 0,
-    Y > 0.
+/* Write whole element */
+write_element_coord([B1|Bs], X, Y):-
+    Y == 0 -> write_element(B1, X);
+    Y > 0 -> Y1 is Y-1, write_element_coord(Bs, X, Y1).
 
-write_board_coord([B1|Bs], X, Y):-
-    X == 0 -> write_row_element(B1, Y);
-    X > 0 -> X1 is X-1, write_board_coord(Bs, X1, Y).
+write_element([R1|Rs], X):-
+    X == 0 -> display_board_case(R1);
+    X > 0 -> X1 is X-1, write_element(Rs, X1).
 
-write_row_element([R1|Rs], Y):-
-    Y == 0 -> display_board_case(R1);
-    Y > 0 -> Y1 is Y-1, write_row_element(Rs, Y1).
+/* Write element type */
+write_type_coord([B1|Bs], X, Y):-
+    Y == 0 -> write_element_type(B1, X);
+    Y > 0 -> Y1 is Y-1, write_type_coord(Bs, X, Y1).
+
+write_element_type([R1|Rs], X):-
+    X == 0 -> display_type(R1);
+    X > 0 -> X1 is X-1, write_element_type(Rs, X1).
+
+/* Write element owner */
+
+write_owner_coord([B1|Bs], X, Y):-
+    Y == 0 -> write_element_owner(B1, X);
+    Y > 0 -> Y1 is Y-1, write_owner_coord(Bs, X, Y1).
+
+write_element_owner([R1|Rs], X):-
+    X == 0 -> display_owner(R1);
+    X > 0 -> X1 is X-1, write_element_owner(Rs, X1).
+
+/* Write element ships*/
+
+write_ships_coord([B1|Bs], X, Y):-
+    Y == 0 -> write_element_ships(B1, X);
+    Y > 0 -> Y1 is Y-1, write_ships_coord(Bs, X, Y1).
+
+write_element_ships([R1|Rs], X):-
+    X == 0 -> display_ships(R1);
+    X > 0 -> X1 is X-1, write_element_ships(Rs, X1).
+
+/* Write element building */
+
+write_building_coord([B1|Bs], X, Y):-
+    Y == 0 -> write_element_building(B1, X);
+    Y > 0 -> Y1 is Y-1, write_building_coord(Bs, X, Y1).
+
+write_element_building([R1|Rs], X):-
+    X == 0 -> display_building(R1);
+    X > 0 -> X1 is X-1, write_element_building(Rs, X1).
+
+/*** END OF WRITE FUNCTIONS ***/
 
 display_board_test([B1|Bs]):-
     display_board_case(B1),
@@ -120,8 +175,8 @@ test_display_board:-
 
 /* Each element of the board is a line. Each element within the line is a piece.*/
 board([
+    [[h, 1, ['A', 'D'], n], x, x],
     [[h, 1, ['A', 'B', 'C', 'D'], n], x, x],
-    [x, x, x],
     [x, x, [h, 2, ['W', 'X', 'Y', 'Z'], n]]]
     ).
 
