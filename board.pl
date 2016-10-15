@@ -443,29 +443,30 @@ display_num_linhas(N):-
     N = 0,
     write('').
 
-display_num_linhas(NumLinhasAdicionais):-
+display_num_linhas(NumLinhasAdicionais, NumOfCols):-
     N1 is NumLinhasAdicionais - 1,
-    display_line_4(0, 4),
-    display_line_5(0, 4),
-    display_line_6(0, 4),
-    display_line_7(0, 4),
+    display_line_4(0, NumOfCols),
+    display_line_5(0, NumOfCols),
+    display_line_6(0, NumOfCols),
+    display_line_7(0, NumOfCols),
     display_num_linhas(N1).
 
 
 
-display_start_lines:-
-    display_line_1(0, 4),
-    display_line_2(0, 4),
-    display_line_3(0, 4).
+display_start_lines(NumOfCols):-
+    display_line_1(0, NumOfCols),
+    display_line_2(0, NumOfCols),
+    display_line_3(0, NumOfCols).
 
-display_end_lines:-
-    display_line_8(0, 4),
-    display_line_9(0, 4).
+display_end_lines(NumOfCols):-
+    display_line_8(0, NumOfCols),
+    display_line_9(0, NumOfCols).
 
 display_board:-
-    length(B, NumOfRows), board(B),
-    display_start_lines,
-    display_num_linhas(NumOfRows//2),
-    display_end_lines.
+    board(B),
+    length(B, NumOfRows), 
+    display_start_lines(2),
+    display_num_linhas(NumOfRows//2 , 2),
+    display_end_lines(2).
 
 display:- display_board.
