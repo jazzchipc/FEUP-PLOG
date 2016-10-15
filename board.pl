@@ -40,15 +40,11 @@ sublist(Xs, [Y|Ys]):- sublist(Xs,Ys).
 length([],0);
 length([X|Xs], s(N)):- length(Xs, N).
 
-lists([], []).
+first(X, [X|_]).
 
-lists([[L1|_]|Lists]), [L1|L]:-
-    lists(Lists,L).
+last(X, [X]).
+last(X, [_|Z]) :- last(X, Z).
 
-lists([[_,L1|Ls]|Lists], L):-
-    lists([[L1|Ls]|Lists], L).
-
-/*lists: That is, take the first element of the first list in your input list and continue recursively with the remaining lists. As a second chance, skip that element and redo with the remaining elements.*/
 /* END OF UTILITIES */
 
 
@@ -179,8 +175,6 @@ board([
     [[h, 1, ['A', 'B', 'C', 'D'], n], x, x],
     [x, x, [h, 2, ['W', 'X', 'Y', 'Z'], n]]]
     ).
-
-% Adicionar coordenadas
 
 translate(s10, '          ').
 translate(s8, '        ').
@@ -465,8 +459,15 @@ display_end_lines(NumOfCols):-
 display_board:-
     board(B),
     length(B, NumOfRows), 
-    display_start_lines(2),
-    display_num_linhas(NumOfRows//2 , 2),
-    display_end_lines(2).
+
+    first(FirstRow, B),
+    length(FirstRow, NumOfElementsFirstRow),
+
+    last(LastRow, B),
+    length(LastRow, NumOfElementsLastRow),
+
+    display_start_lines(NumOfElementsFirstRow),
+    display_num_linhas(NumOfRows//2 , NumOfElementsFirstRow),
+    display_end_lines(NumOfElementsLastRow).
 
 display:- display_board.
