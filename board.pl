@@ -3,7 +3,7 @@
 /* TYPES OF CASE 
 h - home system
 b - blackhole
-c - wormhole
+w - wormhole
 l1 - level one system (1 point)
 l2 - level two system (2 points)
 l3 - level three system (3 points)
@@ -13,6 +13,7 @@ n - nebula (5 points)
 /* OWNER
 1 - player one
 2 - player two
+f - free
 */
 
 /* LIST OF SHIPS
@@ -104,7 +105,7 @@ display_type(X):-
     write(SpaceBetweenHex).
 
 display_type([C,_,_,_|_]):-
-    (C == 'h'; C == 'b'; C == 'c'; C == 'n') ->
+    (C == 'h'; C == 'b'; C == 'n'; C == 'w') ->
         translate(s1, S),
         write(S),
         write(C),
@@ -215,21 +216,6 @@ display_board_test([B1|Bs]):-
 
 test_display_board:-
     board_example(B), display_board_test(B).
-
-/* Each element of the board is a line. Each element within the line is a piece.*/
-board([
-    [[l3, 1, ['A', 'D'], n], [c, 2, ['A', 'B', 'C', 'D'], n], x],
-    [[l2, 1, ['A', 'C'], n], x, [l2, 1, ['A', 'D'], t]],
-    [x, [h, 2, ['D'], n], x],
-    [x, [h, 2, ['D'], n], x],
-    [x, [h, 2, ['D'], n], x],
-    [x, [h, 2, ['D'], n], x],
-    [x, [h, 2, ['D'], n], x],
-    [x, [h, 2, ['D'], n], x],
-    [x, [h, 2, ['D'], n], x],
-    [x, [h, 2, ['D'], n], x],
-    [x, x, [c, 1, ['A', 'B'], n]]]
-    ).
 
 generate_empty_space(Spaces, NumberOfTimes):-
     NumberOfTimes = 0,
@@ -466,7 +452,9 @@ display_end_lines(NumOfCols, LastRow):-
 
 display_board:-
     board(B),
-    length(B, NumOfRows), 
+    length(B, NumOfRows),
+
+    1 is mod(NumOfRows, 2), /**** Until we can work with even rows ****/
 
     first(FirstRow, B),
     length(FirstRow, NumOfElementsFirstRow),
@@ -479,3 +467,19 @@ display_board:-
     display_end_lines(NumOfElementsLastRow, LastRow).
 
 display:- display_board.
+
+/**********
+*  BOARD  *
+***********/
+
+/* Each element of the board is a line. Each element within the line is a piece.*/
+board([
+    [[l2, f, [], n], [l2, f, [], n], [w, f, [], n]],
+    [[l1, f, [], n], [l2, f, [], n], [l2, f, [], n]],
+    [[h, 1, ['A', 'B', 'C', 'D'], n], [l2, f, [], n], [l2, f, [], n]],
+    [[l3, f, [], n], [n, f, [], n], [h, 2, ['W', 'X', 'Y', 'Z'], n]],
+    [[b, f, [], n], [w, f, [], n], [b, f, [], n]],
+    [[l3, f, [], n], [n, f, [], n], [w, f, [], n]],
+    [[l1, f, [], n], [l2, f, [], n], [l2, f, [], n]]
+    ]
+    ).
