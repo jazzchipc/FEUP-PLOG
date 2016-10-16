@@ -91,14 +91,11 @@ display_list([E1|Es]):-
     write(E1),
     display_list(Es).
 
-getLine(X, [_|Xs], N):-
-    N == 1 ->
-        write('');
-    N == 0 ->
-        N1 is N+1,
-        getline(X, Xs, N1).
-    
-
+getLine(X, [X|Xs], LineToSend):-
+    LineToSend == 0;
+    LineToSend > 0 ->
+        N1 is LineToSend-1,
+        getLine(X, Xs, N1). 
 
 /* These next functions add space to fill the hexagon awhile displaying information */
 
@@ -222,8 +219,8 @@ test_display_board:-
 
 /* Each element of the board is a line. Each element within the line is a piece.*/
 board([
-    [[l1, 1, ['A', 'D'], n], [b, 1, ['A', 'B', 'C', 'D'], n], x],
-    [[h, 1, ['A', 'B', 'C', 'D'], n], x, x],
+    [[l3, 1, ['A', 'D'], n], [c, 2, ['A', 'B', 'C', 'D'], n], x],
+    [[l2, 2, ['A', 'B', 'C', 'D'], n], x, x],
     [x, x, [h, 2, ['W', 'X', 'Y', 'Z'], n]]]
     ).
 
@@ -295,22 +292,23 @@ display_line_3(NumberEmptySpaces, NumberHexagons, FirstRow):-
     generate_empty_space(s10, NumberEmptySpaces),
     display_line_3_aux(NumberHexagons, FirstRow).
 
-display_line_4_aux(NumberHexagons, MatrixLine):-
+display_line_4_aux(NumberHexagons, UpperMatrixLine, MiddleMatrixLine):-
     NumberHexagons > 0 ->
         N1 is NumberHexagons - 1,
-        getLine(Current),
+        getCurrentPiece(UpperMatrixLine, CurrentUpperPiece, RemainingUpperPieces),
+        getCurrentPiece(MiddleMatrixLine, CurrentMiddlePiece, RemainingMiddlePieces),
         translate(ub, OpenHex),
         translate(s3, SpaceInsideHex),
         translate(db, CloseHex),
         translate(s5, SpaceInsideHex2),
         write(CloseHex),
-        write(SpaceInsideHex2),
+        display_owner(CurrentUpperPiece),
         write(OpenHex),
-        write(SpaceInsideHex),
-        display_line_4_aux(N1);
+        display_type(CurrentMiddlePiece),
+        display_line_4_aux(N1, RemainingUpperPieces, RemainingMiddlePieces);
     NumberHexagons == 0 -> nl.
 
-display_line_4(NumberEmptySpaces, NumberHexagons):-
+display_line_4(NumberEmptySpaces, NumberHexagons, UpperMatrixLine, MiddleMatrixLine):-
     generate_empty_space(s1, 1),
     generate_empty_space(s10, NumberEmptySpaces),
     translate(ub, OpenHex),
@@ -318,7 +316,7 @@ display_line_4(NumberEmptySpaces, NumberHexagons):-
     translate(db, CloseHex),
     write(OpenHex),
     write(SpaceInsideHex),
-    display_line_4_aux(NumberHexagons).
+    display_line_4_aux(NumberHexagons, UpperMatrixLine, MiddleMatrixLine).
 
 display_line_5_aux(NumberHexagons):-
     NumberHexagons > 0 ->
@@ -431,14 +429,19 @@ display_line_9(NumberEmptySpaces, NumberHexagons, LastRow):-
     generate_empty_space(s10, NumberEmptySpaces),
     display_line_9_aux(NumberHexagons, LastRow).
 
-display_num_linhas(NumLinhasAdicionais, NumOfCols):-
+display_num_linhas(NumLinhasAdicionais, NumOfCols, MatrixLineToStart, Board):-
     NumLinhasAdicionais > 0 ->
         N1 is NumLinhasAdicionais - 1,
-        display_line_4(0, NumOfCols),
+        HexMiddleLine is MatrixLineToStart+1,
+        HexLowerLine is MatrixLineToStart+2,
+        getLine(UpperMatrixLine, Board, MatrixLineToStart),
+        getLine(MiddleMatrixLine, Board, HexMiddleLine),
+        getLine(LowerMatrixLine, Board, HexLowerLine),
+        display_line_4(0, NumOfCols, UpperMatrixLine, MiddleMatrixLine),
         display_line_5(0, NumOfCols),
         display_line_6(0, NumOfCols),
         display_line_7(0, NumOfCols),
-        display_num_linhas(N1);
+        display_num_linhas(N1, NumOfCols, HexLowerLine, Board);
     NumLinhasAdicionais == 0 -> write('').
 
 display_start_lines(NumOfCols, FirstRow):-
@@ -461,7 +464,7 @@ display_board:-
     length(LastRow, NumOfElementsLastRow),
 
     display_start_lines(NumOfElementsFirstRow, FirstRow),
-    display_num_linhas(NumOfRows//2 , NumOfElementsFirstRow),
+    display_num_linhas(NumOfRows//2 , NumOfElementsFirstRow, 0, B),
     display_end_lines(NumOfElementsLastRow, LastRow).
 
 display:- display_board.
