@@ -219,8 +219,8 @@ test_display_board:-
 /* Each element of the board is a line. Each element within the line is a piece.*/
 board([
     [[l3, 1, ['A', 'D'], n], [c, 2, ['A', 'B', 'C', 'D'], n], x],
-    [[l2, 2, ['A', 'B', 'C', 'D'], n], x, x],
-    [x, x, [h, 2, ['W', 'X', 'Y', 'Z'], n]]]
+    [[l2, 1, ['A', 'C'], n], x, [l2, 1, ['A', 'D'], t]],
+    [x, x, [c, 1, ['A', 'B'], n]]]
     ).
 
 generate_empty_space(Spaces, NumberOfTimes):-
@@ -439,7 +439,7 @@ display_num_linhas(NumLinhasAdicionais, NumOfCols, MatrixLineToStart, Board):-
         HexLowerLine is MatrixLineToStart+2,
         getLine(UpperMatrixLine, Board, MatrixLineToStart),
         getLine(MiddleMatrixLine, Board, HexMiddleLine),
-        getLine(LowerMatrixLine, Board, MatrixLineToStart),
+        getLine(LowerMatrixLine, Board, HexLowerLine),
         display_line_4(0, NumOfCols, UpperMatrixLine, MiddleMatrixLine),
         display_line_5(0, NumOfCols, UpperMatrixLine, MiddleMatrixLine),
         display_line_6(0, NumOfCols, MiddleMatrixLine, LowerMatrixLine),
