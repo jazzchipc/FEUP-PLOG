@@ -91,11 +91,10 @@ display_list([E1|Es]):-
     write(E1),
     display_list(Es).
 
-getLine(X, [X|Xs], LineToSend):-
-    LineToSend > 0 ->
-        N1 is LineToSend-1,
-        getLine(Z, Xs, N1);
-    LineToSend == 0.
+getLine(X, [X|_], 0).
+
+getLine(X, [_|L], LineToSend):-
+    getLine(X, L, K1), LineToSend is K1 + 1.
 
 /* These next functions add space to fill the hexagon awhile displaying information */
 
