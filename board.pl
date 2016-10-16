@@ -92,10 +92,10 @@ display_list([E1|Es]):-
     display_list(Es).
 
 getLine(X, [X|Xs], LineToSend):-
-    LineToSend == 0;
     LineToSend > 0 ->
         N1 is LineToSend-1,
-        getLine(X, Xs, N1). 
+        getLine(Z, Xs, N1);
+    LineToSend == 0.
 
 /* These next functions add space to fill the hexagon awhile displaying information */
 
@@ -318,21 +318,25 @@ display_line_4(NumberEmptySpaces, NumberHexagons, UpperMatrixLine, MiddleMatrixL
     write(SpaceInsideHex),
     display_line_4_aux(NumberHexagons, UpperMatrixLine, MiddleMatrixLine).
 
-display_line_5_aux(NumberHexagons):-
+display_line_5_aux(NumberHexagons, UpperMatrixLine, MiddleMatrixLine):-
     NumberHexagons > 0 ->
         N1 is NumberHexagons - 1,
-        translate(t3, A),
+        getCurrentPiece(UpperMatrixLine, CurrentUpperPiece, RemainingUpperPieces),
+        getCurrentPiece(MiddleMatrixLine, CurrentMiddlePiece, RemainingMiddlePieces),
+        translate(t1, A),
         translate(ub, OpenHex),
         translate(s5, SpaceInsideHex),
         translate(db, CloseHex),
         write(CloseHex),
         write(A),
+        display_building(CurrentUpperPiece),
         write(OpenHex),
+        display_ships(CurrentMiddlePiece),
         write(SpaceInsideHex),
-        display_line_5_aux(N1);
+        display_line_5_aux(N1, RemainingUpperPieces, RemainingMiddlePieces);
     NumberHexagons == 0 -> nl.
 
-display_line_5(NumberEmptySpaces, NumberHexagons):-
+display_line_5(NumberEmptySpaces, NumberHexagons, UpperMatrixLine, MiddleMatrixLine):-
     generate_empty_space(s0, 1),
     generate_empty_space(s10, NumberEmptySpaces),
     translate(ub, OpenHex),
@@ -340,7 +344,7 @@ display_line_5(NumberEmptySpaces, NumberHexagons):-
     translate(db, CloseHex),
     write(OpenHex),
     write(SpaceInsideHex),
-    display_line_5_aux(NumberHexagons).
+    display_line_5_aux(NumberHexagons, UpperMatrixLine, MiddleMatrixLine).
 
 display_line_6_aux(NumberHexagons):-
     NumberHexagons > 0 ->
@@ -436,13 +440,13 @@ display_num_linhas(NumLinhasAdicionais, NumOfCols, MatrixLineToStart, Board):-
         HexLowerLine is MatrixLineToStart+2,
         getLine(UpperMatrixLine, Board, MatrixLineToStart),
         getLine(MiddleMatrixLine, Board, HexMiddleLine),
-        getLine(LowerMatrixLine, Board, HexLowerLine),
+        getLine(LowerMatrixLine, Board, MatrixLineToStart),
         display_line_4(0, NumOfCols, UpperMatrixLine, MiddleMatrixLine),
-        display_line_5(0, NumOfCols),
+        display_line_5(0, NumOfCols, UpperMatrixLine, MiddleMatrixLine),
         display_line_6(0, NumOfCols),
         display_line_7(0, NumOfCols),
         display_num_linhas(N1, NumOfCols, HexLowerLine, Board);
-    NumLinhasAdicionais == 0 -> write('').
+    NumLinhasAdicionais == 0.
 
 display_start_lines(NumOfCols, FirstRow):-
     display_line_1(0, NumOfCols),
