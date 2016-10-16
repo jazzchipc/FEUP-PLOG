@@ -282,7 +282,6 @@ display_line_3_aux(NumberHexagons, FirstRow):-
         write(A),
         write(OpenHex),
         display_ships(CurrentPiece),
-        % write(SpaceInsideHex),
         write(CloseHex),
         display_line_3_aux(N1, RemainingPieces);
     NumberHexagons == 0 -> nl.
@@ -332,7 +331,6 @@ display_line_5_aux(NumberHexagons, UpperMatrixLine, MiddleMatrixLine):-
         display_building(CurrentUpperPiece),
         write(OpenHex),
         display_ships(CurrentMiddlePiece),
-        write(SpaceInsideHex),
         display_line_5_aux(N1, RemainingUpperPieces, RemainingMiddlePieces);
     NumberHexagons == 0 -> nl.
 
