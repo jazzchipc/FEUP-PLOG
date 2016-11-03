@@ -1,3 +1,5 @@
+:- include('utils.pl').
+
 %%% Case example: [<type>, <owner>, [<listOfShips], <building>]
 
 /* TYPES OF CASE 
@@ -47,8 +49,9 @@ translate(x, '').
 
 /* UTILITIES */
 
-prefix([],Ys).
-prefix([X|Xs], [X|Ys]):- prefix(Xs,Ys).
+%Clash error
+%prefix([],Ys).
+%prefix([X|Xs], [X|Ys]):- prefix(Xs,Ys).
 
 sufix(Xs, Xs).
 sufix(Xs, [Y|Ys]):- suffix(Xs, Ys).
@@ -61,8 +64,9 @@ length([X|Xs], s(N)):- length(Xs, N).
 
 first(X, [X|_]).
 
-last(X, [X]).
-last(X, [_|Z]) :- last(X, Z).
+%Clash error
+%last(X, [X]).
+%last(X, [_|Z]) :- last(X, Z).
 
 /* END OF UTILITIES */
 
