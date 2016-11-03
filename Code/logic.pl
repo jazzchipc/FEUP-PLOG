@@ -1,5 +1,3 @@
-:- include('utils.pl').
-
 getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
     nth0(Column, MyRow, Piece).

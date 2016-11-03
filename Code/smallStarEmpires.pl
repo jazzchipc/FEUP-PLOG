@@ -1,6 +1,7 @@
 :- use_module(library(lists)).
 :- include('board.pl').
-:- include('logic.pl'). 
+:- include('utils.pl').
+:- include('logic.pl').
 
 startGame:- 
     write('The game started!'),
