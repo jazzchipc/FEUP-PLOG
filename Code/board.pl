@@ -210,6 +210,51 @@ write_element_building([R1|Rs], X):-
 
 /*** END OF WRITE FUNCTIONS ***/
 
+/*** BEGIN OF DISPLAY OF BOARD ***/
+
+%% Wormhole displays
+
+display_wormhole_line_2:-
+    write(@@@).
+
+display_wormhole_line_3:-
+    write(@),
+    translate(s3, S),
+    write(S),
+    write(@).
+
+display_wormhole_line_4:-
+    display_wormhole_line_3.
+
+display_wormhole_line_5:-
+    display_wormhole_line_2.
+
+display_wormhole_test:-
+    display_wormhole_line_2, nl,
+    display_wormhole_line_3, nl,
+    display_wormhole_line_4, nl,
+    display_wormhole_line_5.
+
+%% Black hole displays
+
+display_blackhole_line_2:-
+    write(###).
+
+display_blackhole_line_3:-
+    write(#####).
+
+display_blackhole_line_4:-
+    display_blackhole_line_3.
+
+display_blackhole_line_5:-
+    display_blackhole_line_2.
+
+display_blackhole_test:-
+    display_blackhole_line_2, nl,
+    display_blackhole_line_3, nl,
+    display_blackhole_line_4, nl,
+    display_blackhole_line_5.
+
 display_board_test([B1|Bs]):-
     display_board_case(B1),
     display_board_test(Bs).
@@ -467,6 +512,8 @@ display_board:-
     display_end_lines(NumOfElementsLastRow, LastRow).
 
 display:- display_board.
+
+/*** END OF DISPLAY OF BOARD ***/
 
 /**********
 *  BOARD  *
