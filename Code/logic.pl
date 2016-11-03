@@ -1,9 +1,42 @@
+/*** LOGICAL ARRAY KEYWORDS ***/
+
+/*** TYPES OF SYSTEMS 
+home - Homeworld system 
+starX - Start system with X planets
+nebula - Nebula system 
+empty - Empty system 
+wormhole - Wormhole system 
+blackhole - Blackhole system 
+*/
+
+/*** OWNER
+1 - player one
+2 - player two
+free - free system
+*/
+
+/*** LIST OF SHIPS
+Player one: 
+    -shipA, shipB, shipC, shipD
+    -shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged
+
+Player two:
+    -shipW, shipX, shipY, shipZ
+    -shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged
+*/
+
+/*** BUILDING
+trade - trade station
+colony - colony
+none - none
+*/
+
 getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
     nth0(Column, MyRow, Piece).
 
-setPieceAux(Row, Column, BoardIn, Piece, BoardOut):-
-    Column
+%setPieceAux(Row, Column, BoardIn, Piece, BoardOut):-
+%    Column
 
 setPieceAux(Row, Column, BoardIn, Piece, BoardOut):-
     NewColumn is Column - 1,
