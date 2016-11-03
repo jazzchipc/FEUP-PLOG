@@ -1,3 +1,7 @@
+:- use_module(library(lists)).
+:- include('board.pl').
+:- include('utils.pl').
+
 /*** LOGICAL ARRAY KEYWORDS ***/
 
 /*** TYPES OF SYSTEMS 
@@ -85,43 +89,80 @@ hasSystemTradeStation(trade).
 isSystemColonized(X):-
     hasSystemColony(X);
     hasSystemTrade(X).
-    
 
 getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
     nth0(Column, MyRow, Piece).
 
-%setPieceAux(Row, Column, BoardIn, Piece, BoardOut):-
-%    Column
+replaceElement(_, _, [], []).
+replaceElement(O, R, [O|Xs], [R|Ys]):-
+    replaceElement(O, R, Xs, Ys).
+replaceElement(O, R, [X|Xs], [X|Ys]):-
+    X \= O,
+    replaceElement(O, R, Xs, Ys).
 
-setPieceAux(Row, Column, BoardIn, Piece, BoardOut):-
-    NewColumn is Column - 1,
-    setPieceAux(Row, NewColumn, BoardIn, Piece, BoardOut).
+replace(_, _, [], []).
+replace(OldPiece, NewPiece, [X|Xs], [Y|Ys]):-
+    replaceElement(OldPiece, NewPiece, X, Y),
+    replace(OldPiece, NewPiece, Xs, Ys).
 
-setPiece(Row, Column, [X|Xs], Piece, BoardOut):-
-    Row == 0,
-    setPieceAux(Row, Column, [X|Xs], Piece, BoardOut).
+getShip([_,_,Ship,_], Ship).
 
-setPiece(Row, Column, [X|Xs], Piece, BoardOut):-
-    NewRow is Row - 1,
-    setPiece(NewRow, Column, Xs, Piece, BoardOut).
+getPieceGivenShipAux(Ship, [], Column).
+getPieceGivenShipAux(Ship, [_, _, Ship, _|Xs], Column).
+getPieceGivenShipAux(Ship, [X|Xs], Column):-
+    NewColumn is Column + 1,
+    getPieceGivenShipAux(Ship, Xs, NewColumn).
 
+/*Given the ship and the board, returns the row and column that ships is situated*/
+getPieceGivenShip(Ship, [X|Xs], Row, Column, Counter):-
+    getPieceGivenShipAux(Ship, X, 0),
+    NewRow is Counter + 1,
+    getPieceGivenShip(Ship, Xs, NewRow, Column).
 
-% myInit:- board(B), getNthCell(0, 1, B, Cell), write(Cell).
+insertShipOnPiece(Ship, [_,_,Ship_]).
 
 playerTurn(WhoIsPlaying):-
+    board(BoardIn),
+
     write('*** Player '),
     write(WhoIsPlaying),
-    write(' turn ***'), nl,
+    write(' turn ***'), nl, nl,
 
-    write('Select ship: '),
-    read(ShipSelection), nl,
+    /*write('Select ship: '),
+    read(ShipSelection),
+    write('Escrevi esta merda: '),
+    write(ShipSelection).
+    getPieceGivenShip(ShipSelection, BoardIn, CurrentRow, CurrentColumn, 0),*/
     % check if ship can indeed travel
 
+    write('Select row the ship is in now: '),
+    read(CurrentRow),
+    % check row limits
+
+    write('Select column the ship is in now: '),
+    read(CurrentColumn),
+    % check column limits
+
     write('Select row to travel to: '),
-    read(RowSelection), nl,
+    read(DestinationRow),
     % check row limits
 
     write('Select column to travel to: '),
-    read(ColumnSelection), nl.
+    read(DestinationColumn), nl,
     % check column limits
+
+    getPiece(CurrentRow, CurrentColumn, BoardIn, CurrentPiece),
+    getPiece(DestinationRow, DestinationColumn, BoardIn, DestinationPiece),
+    getShip(CurrentPiece, Ship),
+    insertShipOnPiece(Ship, DestinationPiece),
+    % replace(CurrentPiece, DestinationPiece, BoardIn, BoardOut),
+
+    write('OldBoard: '),
+    write(BoardIn), nl,
+    write('OldPiece: '),
+    write(CurrentPiece), nl,
+    write('NewPiece: '),
+    write(DestinationPiece), nl,
+    write('NewBoard: '),
+    write(BoardOut), nl, nl.
