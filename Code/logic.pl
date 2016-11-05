@@ -79,6 +79,68 @@ isCellWormhole([X|[]]):-
 
 isSystemFree(free).
 
+isSystemPlayer1(1).
+
+isSystemPlayer2(2).
+
+isSystemOwned(X):-
+    isSystemPlayer1(X);
+    isSystemPlayer2(X).
+
+%% Get ships
+
+ship(shipA).
+ship(shipB).
+ship(shipC).
+ship(shipD).
+
+ship(shipW).
+ship(shipX).
+ship(shipY).
+ship(shipZ).
+
+shipDamaged(shipAdamaged).
+shipDamaged(shipBdamaged).
+shipDamaged(shipCdamaged).
+shipDamaged(shipDdamaged).
+
+shipDamaged(shipWdamaged).
+shipDamaged(shipXdamaged).
+shipDamaged(shipYdamaged).
+shipDamaged(shipZdamaged).
+
+isShipNotDamaged(X):-
+    ship(X).
+
+isShipDamaged(X):-
+    shipDamaged(X).
+
+player1Ship(shipA).
+player1Ship(shipB).
+player1Ship(shipC).
+player1Ship(shipD).
+
+player1Ship(shipAdamaged).
+player1Ship(shipBdamaged).
+player1Ship(shipCdamaged).
+player1Ship(shipDdamaged).
+
+shipBelongsToPlayer1(X):-
+    player1Ship(X).
+
+player2Ship(shipW).
+player2Ship(shipX).
+player2Ship(shipY).
+player2Ship(shipZ). 
+
+player2Ship(shipWdamaged).
+player2Ship(shipXdamaged).
+player2Ship(shipYdamaged).
+player2Ship(shipZdamaged).
+
+shipBelongsToPlayer2(X):-
+    player2Ship(X).
+
 %% Get buildings
 
 isSystemNotColonized(none).
@@ -89,6 +151,9 @@ hasSystemTradeStation(trade).
 isSystemColonized(X):-
     hasSystemColony(X);
     hasSystemTrade(X).
+
+
+/** BOARD CELL FUNCTIONS **/
 
 getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
