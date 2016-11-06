@@ -27,6 +27,8 @@ c - colony
 n - none
 */
 
+%% Spaces translations
+
 translate(s10, '          ').
 translate(s8, '        ').
 translate(s7, '       ').
@@ -81,120 +83,15 @@ translate(trade, '[T]').
 translate(none, '___').
 
 
-/* UTILITIES */
-
-prefix([],Ys).
-prefix([X|Xs], [X|Ys]):- prefix(Xs,Ys).
-
-sufix(Xs, Xs).
-sufix(Xs, [Y|Ys]):- suffix(Xs, Ys).
-
-sublist(Xs, Ys):- prefix(Xs, Ys).
-sublist(Xs, [Y|Ys]):- sublist(Xs,Ys).
-
-length([],0);
-length([X|Xs], s(N)):- length(Xs, N).
-
-first(X, [X|_]).
-
-last(X, [X]).
-last(X, [_|Z]) :- last(X, Z).
-
-/* END OF UTILITIES */
-
-
-/* DISPLAY GAME CASE FUNCTIONS*/ 
-
-%Verify errors example function
-
-isTypeOfCase(C):-
-    C == h;
-    C == b;
-    C == c;
-    C == l1;
-    C == l2;
-    C == l3;
-    C == n.
-
-case_example([h, 1, ['A', 'B', 'C', 'D'], n]).
-
-board_example([
-    [h, 1, ['A', 'B', 'C', 'D'], n], x, [h, 2, ['W', 'X', 'Y', 'Z'], n]
-]).
-
-display_list([]).
-
-display_list([E1|Es]):-
-    write(E1),
-    display_list(Es).
+/* GET GAME PIECE FUNCTIONS */ 
 
 getLine(X, [X|_], 0).
 
 getLine(X, [_|L], LineToSend):-
     getLine(X, L, K1), LineToSend is K1 + 1.
 
-/* These next functions add space to fill the hexagon awhile displaying information */
 
-display_type(X):-
-    translate(X, WHY),      % WHY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    translate(s3, SpaceBetweenHex),
-    write(SpaceBetweenHex).
-
-display_type([C,_,_,_|_]):-
-    (C == 'h'; C == 'b'; C == 'n'; C == 'w') ->
-        translate(s1, S),
-        write(S),
-        write(C),
-        write(S);
-    (C == 'l1'; C == 'l2'; C == 'l3') ->
-        translate(s1, S),
-        write(S),
-        write(C).
-
-display_owner(X):-
-    translate(X, WHY),      % WHY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    translate(s5, SpaceBetweenHex),
-    write(SpaceBetweenHex).
-
-display_owner([_,O,_,_|_]):- 
-    translate(s2, SpaceBetweenHex),
-    write(SpaceBetweenHex),
-    write(O),
-    write(SpaceBetweenHex).
-
-display_ships(X):-
-    translate(X, WHY),      % WHY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    translate(s5, SpaceBetweenHex),
-    write(SpaceBetweenHex).
-
-display_ships([_,_,S,_|_]):- 
-    length(S, L),
-    L1 is 5-L,
-    generate_empty_space(s1, L1),
-    display_list(S).
-
-display_building(X):-
-    translate(X, WHY),      % WHY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    translate(t2, SpaceBetweenHex),
-    write(SpaceBetweenHex).
-
-display_building([_,_,_,B|_]):- 
-    translate(t1, S),
-    write(B),
-    write(S).
-
-empty_case(C):-
-    C==x.
-
-display_board_case([]).
-
-display_board_case(C):-
-    display_type(C),
-    display_owner(C),
-    display_ships(C),
-    display_building(C).
-
-/*** WRITE FUNCTIONS ***/
+/*** WRITE FUNCTIONS (for debugging) ***/
 
 /* Write whole element */
 write_element_coord([B1|Bs], X, Y):-
@@ -325,12 +222,9 @@ display_test([blackhole]):-
     display_piece_line_3([blackhole]), nl,
     display_piece_line_4([blackhole]).
 
-display_board_test([B1|Bs]):-
-    display_board_case(B1),
-    display_board_test(Bs).
+/*** END OF DISPLAY OF BOARD PIECES ***/
 
-test_display_board:-
-    board_example(B), display_board_test(B).
+/*** BEGIN OF DISPLAY OF BOARD HEXAGONS ***/
 
 generate_empty_space(Spaces, NumberOfTimes):-
     NumberOfTimes = 0,
@@ -457,7 +351,7 @@ display_line_6_aux(NumberHexagons, MiddleMatrixLine, LowerMatrixLine):-
         translate(s3, SpaceInsideHex),
         translate(db, CloseHex),
         translate(s5, SpaceInsideHex2),
-        display_piece_line_2(CurrentMiddlePiece),
+        display_piece_line_3(CurrentMiddlePiece),
         write(OpenHex),
         display_piece_line_1(CurrentLowerPiece),
         write(CloseHex),
@@ -560,7 +454,7 @@ display_end_lines(NumOfCols, LastRow):-
     display_line_9(0, NumOfCols, LastRow).
 
 display_board:-
-    initial_logic_board(B),
+    initial_logic_board(B), %% created in logic.pl
     length(B, NumOfRows),
 
     1 is mod(NumOfRows, 2), /**** Until we can work with even rows ****/
@@ -577,42 +471,4 @@ display_board:-
 
 display:- display_board.
 
-/*** END OF DISPLAY OF BOARD ***/
-
-/**********
-*  BOARD  *
-***********/
-
-/* Each element of the board is a line. Each element within the line is a piece.*/
-initial_board([
-    [[l2, f, [], n], [l2, f, [], n], [w, f, [], n]],
-    [[l1, f, [], n], [l2, f, [], n], [l2, f, [], n]],
-    [[h, 1, ['A', 'B', 'C', 'D'], n], [l2, f, [], n], [l2, f, [], n]],
-    [[l3, f, [], n], [n, f, [], n], [h, 2, ['W', 'X', 'Y', 'Z'], n]],
-    [[b, f, [], n], [w, f, [], n], [b, f, [], n]],
-    [[l3, f, [], n], [n, f, [], n], [l1, f, [], n]],
-    [[l1, f, [], n], [l2, f, [], n], [l2, f, [], n]]
-    ]
-    ).
-
-mid_board([
-    [[l2, f, [], n], [l2, f, [], n], [w, f, [], n]],
-    [[l1, f, [], n], [l2, f, [], n], [l2, 1, [], t]],
-    [[h, 1, ['C', 'D'], n], [l2, 1, ['A'], c], [l2, 2, ['W'], c]],
-    [[l3, f, [], n], [n, 1, ['B'], t], [h, 2, ['Y', 'Z'], n]],
-    [[b, f, [], n], [w, f, [], n], [b, f, [], n]],
-    [[l3, f, [], n], [n, f, [], n], [l1, 2, ['X'], c]],
-    [[l1, f, [], n], [l2, f, [], n], [l2, f, [], n]]
-    ]
-    ).
-
-board([
-    [[l2, 1, ['C'], n], [l2, f, [], n], [w, f, [], n]],
-    [[l1, f, [], n], [l2, f, [], n], [l2, 1, [], t]],
-    [[h, 1, ['D'], n], [l2, 1, ['A'], c], [l2, 2, ['W'], c]],
-    [[l3, 1, [], t], [n, 1, ['B'], t], [h, 2, ['Y', 'Z'], n]],
-    [[b, f, [], n], [w, f, [], n], [b, f, [], n]],
-    [[l3, 1, ['D'], t], [n, 2, [], t], [l1, 2, [], c]],
-    [[l1, 2, ['X'], c], [l2, 2, [], c], [l2, f, [], n]]
-    ]
-    ).
+/*** END OF DISPLAY OF BOARD HEXAGONS ***/
