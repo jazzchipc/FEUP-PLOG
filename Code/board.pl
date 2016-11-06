@@ -48,6 +48,7 @@ translate(x, '').
 %% Logic translations
 
 translate(home, 'h').
+translate(emptyS, '0').
 translate(star1, '1').
 translate(star2, '2').
 translate(star3, '3').
@@ -55,6 +56,7 @@ translate(nebula, 'n').
 
 translate(player1, 'P1').
 translate(player2, 'P2').
+translate(free, '  ').
 
 translate(shipA, 'A').
 translate(shipB, 'B').
@@ -76,7 +78,7 @@ translate(shipZdamaged, 'z').
 
 translate(colony, '(C)').
 translate(trade, '[T]').
-translate(none, '  ').
+translate(none, '___').
 
 
 /* UTILITIES */
@@ -244,20 +246,18 @@ write_element_building([R1|Rs], X):-
 
 /*** END OF WRITE FUNCTIONS ***/
 
-/*** BEGIN OF DISPLAY OF BOARD ***/
+/*** BEGIN OF DISPLAY OF BOARD PIECES ***/
 
+%% Systems and nebula displays
 
-
-%% System and nebula displays
-
-display_line_2([Type, _, _, _]):-
+display_piece_line_1([Type, Owner, Ships, Building]):-
     translate(Type, T),
     translate(s1, S),
     write(S),
     write(T),
     write(S).
 
-display_line_3([_, Owner, _, _]):-
+display_piece_line_2([Type, Owner, Ships, Building]):-
     translate(Owner, O),
     translate(s1, S1),
     translate(s2, S2),
@@ -272,62 +272,58 @@ display_ships([S1|Ss]):-
     write(S),
     display_ships(Ss).
 
-display_line_4([_, _, Ships, _]):-
+display_piece_line_3([Type, Owner, Ships, Building]):-
     length(Ships, L),
     L1 is 5-L,
     display_ships(Ships),
     generate_empty_space(s1, L1).
 
-display_line_5([_, _, _, Building]):-
+display_piece_line_4([Type, Owner, Ships, Building]):-
     translate(Building, B),
-    translate(s1, S),
-    write(S),
-    write(B),
-    write(S).
-
+    write(B).
 
 %% Wormhole displays
 
-display_line_2([wormhole]):-
+display_piece_line_1([wormhole]):-
     write(@@@).
 
-display_line_3([wormhole]):-
+display_piece_line_2([wormhole]):-
     write(@),
     translate(s3, S),
     write(S),
     write(@).
 
-display_line_4([wormhole]):-
-    display_line_3([wormhole]).
+display_piece_line_3([wormhole]):-
+    display_piece_line_2([wormhole]).
 
-display_line_5([wormhole]):-
-    display_line_2([wormhole]).
+display_piece_line_4([wormhole]):-
+    display_piece_line_1([wormhole]).
 
 display_test([wormhole]):-
-    display_line_2([wormhole]), nl,
-    display_line_3([wormhole]), nl,
-    display_line_4([wormhole]), nl,
-    display_line_5([wormhole]).
+    display_piece_line_1([wormhole]), nl,
+    display_piece_line_2([wormhole]), nl,
+    display_piece_line_3([wormhole]), nl,
+    display_piece_line_4([wormhole]).
 
 %% Black hole displays
 
-display_line_2([blackhole]):-
+display_piece_line_1([blackhole]):-
     write(###).
 
-display_line_3([blackhole]):-
+display_piece_line_2([blackhole]):-
     write(#####).
 
-display_line_4([blackhole]):-
-    display_line_3([blackhole]).
+display_piece_line_3([blackhole]):-
+    display_piece_line_2([blackhole]).
 
-display_line_5([blackhole]):-
-    display_line_2([blackhole]).
+display_piece_line_4([blackhole]):-
+    display_piece_line_1([blackhole]).
 
 display_test([blackhole]):-
-    display_line_2([blackhole]), nl,
-    display_line_3([blackhole]), nl,
-    display_line_4([blackhole]), nl,
-    display_line_5([blackhole]).
+    display_piece_line_1([blackhole]), nl,
+    display_piece_line_2([blackhole]), nl,
+    display_piece_line_3([blackhole]), nl,
+    display_piece_line_4([blackhole]).
 
 display_board_test([B1|Bs]):-
     display_board_case(B1),
@@ -372,7 +368,7 @@ display_line_2_aux(NumberHexagons, FirstRow):-
         translate(db, CloseHex),
         translate(s5, SpaceBetweenHex),
         write(OpenHex),
-        display_type(CurrentPiece),
+        display_piece_line_1(CurrentPiece),
         write(CloseHex),
         write(SpaceBetweenHex),
         display_line_2_aux(N1, RemainingPieces);
@@ -393,7 +389,7 @@ display_line_3_aux(NumberHexagons, FirstRow):-
         translate(db, CloseHex),
         write(A),
         write(OpenHex),
-        display_ships(CurrentPiece),
+        display_piece_line_2(CurrentPiece),
         write(CloseHex),
         display_line_3_aux(N1, RemainingPieces);
     NumberHexagons == 0 -> nl.
@@ -412,9 +408,9 @@ display_line_4_aux(NumberHexagons, UpperMatrixLine, MiddleMatrixLine):-
         translate(s3, SpaceInsideHex),
         translate(db, CloseHex),
         translate(s5, SpaceInsideHex2),
-        display_type(CurrentMiddlePiece),
+        display_piece_line_1(CurrentMiddlePiece),
         write(CloseHex),
-        display_owner(CurrentUpperPiece),
+        display_piece_line_3(CurrentUpperPiece),
         write(OpenHex),
         display_line_4_aux(N1, RemainingUpperPieces, RemainingMiddlePieces);
     NumberHexagons == 0 -> nl.
@@ -433,14 +429,12 @@ display_line_5_aux(NumberHexagons, UpperMatrixLine, MiddleMatrixLine):-
         N1 is NumberHexagons - 1,
         getCurrentPiece(UpperMatrixLine, CurrentUpperPiece, RemainingUpperPieces),
         getCurrentPiece(MiddleMatrixLine, CurrentMiddlePiece, RemainingMiddlePieces),
-        translate(t1, A),
         translate(ub, OpenHex),
         translate(s5, SpaceInsideHex),
         translate(db, CloseHex),
-        display_ships(CurrentMiddlePiece),
+        display_piece_line_2(CurrentMiddlePiece),
         write(CloseHex),
-        write(A),
-        display_building(CurrentUpperPiece),
+        display_piece_line_4(CurrentUpperPiece),
         write(OpenHex),
         display_line_5_aux(N1, RemainingUpperPieces, RemainingMiddlePieces);
     NumberHexagons == 0 -> nl.
@@ -463,9 +457,9 @@ display_line_6_aux(NumberHexagons, MiddleMatrixLine, LowerMatrixLine):-
         translate(s3, SpaceInsideHex),
         translate(db, CloseHex),
         translate(s5, SpaceInsideHex2),
-        display_owner(CurrentMiddlePiece),
+        display_piece_line_2(CurrentMiddlePiece),
         write(OpenHex),
-        display_type(CurrentLowerPiece),
+        display_piece_line_1(CurrentLowerPiece),
         write(CloseHex),
         display_line_6_aux(N1, RemainingMiddlePieces, RemainingLowerPiece);
     NumberHexagons == 0 -> nl.
@@ -485,14 +479,12 @@ display_line_7_aux(NumberHexagons, MiddleMatrixLine, LowerMatrixLine):-
         N1 is NumberHexagons - 1,
         getCurrentPiece(MiddleMatrixLine, CurrentMiddlePiece, RemainingMiddlePieces),
         getCurrentPiece(LowerMatrixLine, CurrentLowerPiece, RemainingLowerPiece),
-        translate(t1, A),
         translate(ub, OpenHex),
         translate(s5, SpaceInsideHex),
         translate(db, CloseHex),
-        write(A),
-        display_building(CurrentMiddlePiece),
+        display_piece_line_4(CurrentMiddlePiece),
         write(OpenHex),
-        display_ships(CurrentLowerPiece),
+        display_piece_line_2(CurrentLowerPiece),
         write(CloseHex),
         display_line_7_aux(N1, RemainingMiddlePieces, RemainingLowerPiece);
     NumberHexagons == 0 -> nl.
@@ -513,7 +505,7 @@ display_line_8_aux(NumberHexagons, LastRow):-
         translate(db, CloseHex),
         translate(s3, SpaceInsideHex2),
         write(CloseHex),
-        display_owner(CurrentPiece),
+        display_piece_line_2(CurrentPiece),
         write(OpenHex),
         write(SpaceInsideHex2),
         display_line_8_aux(N1, RemainingPieces);
@@ -528,13 +520,11 @@ display_line_9_aux(NumberHexagons, LastRow):-
     NumberHexagons > 0 ->
         N1 is NumberHexagons-1,
         getCurrentPiece(LastRow, CurrentPiece, RemainingPieces),
-        translate(t1, A),
         translate(ub, OpenHex),
         translate(db, CloseHex),
         translate(s5, SpaceBetweenHex),
         write(CloseHex),
-        write(A),
-        display_building(CurrentPiece),
+        display_piece_line_4(CurrentPiece),
         write(OpenHex),
         write(SpaceBetweenHex),
         display_line_9_aux(N1, RemainingPieces);
@@ -570,7 +560,7 @@ display_end_lines(NumOfCols, LastRow):-
     display_line_9(0, NumOfCols, LastRow).
 
 display_board:-
-    board(B),
+    initial_logic_board(B),
     length(B, NumOfRows),
 
     1 is mod(NumOfRows, 2), /**** Until we can work with even rows ****/
