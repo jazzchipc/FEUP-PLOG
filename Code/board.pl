@@ -45,6 +45,40 @@ translate(nl, '\n').
 translate(c, '1').
 translate(x, '').
 
+%% Logic translations
+
+translate(home, 'h').
+translate(star1, '1').
+translate(star2, '2').
+translate(star3, '3').
+translate(nebula, 'n').
+
+translate(player1, 'P1').
+translate(player2, 'P2').
+
+translate(shipA, 'A').
+translate(shipB, 'B').
+translate(shipC, 'C').
+translate(shipD, 'D').
+translate(shipW, 'W').
+translate(shipX, 'X').
+translate(shipY, 'Y').
+translate(shipZ, 'Z').
+
+translate(shipAdamaged, 'a').
+translate(shipBdamaged, 'b').
+translate(shipCdamaged, 'c').
+translate(shipDdamaged, 'd').
+translate(shipWdamaged, 'w').
+translate(shipXdamaged, 'x').
+translate(shipYdamaged, 'y').
+translate(shipZdamaged, 'z').
+
+translate(colony, '(C)').
+translate(trade, '[T]').
+translate(none, '  ').
+
+
 /* UTILITIES */
 
 prefix([],Ys).
@@ -212,48 +246,88 @@ write_element_building([R1|Rs], X):-
 
 /*** BEGIN OF DISPLAY OF BOARD ***/
 
+
+
+%% System and nebula displays
+
+display_line_2([Type, _, _, _]):-
+    translate(Type, T),
+    translate(s1, S),
+    write(S),
+    write(T),
+    write(S).
+
+display_line_3([_, Owner, _, _]):-
+    translate(Owner, O),
+    translate(s1, S1),
+    translate(s2, S2),
+    write(S1),
+    write(O), 
+    write(S2).
+
+display_ships([]).
+
+display_ships([S1|Ss]):-
+    translate(S1, S),
+    write(S),
+    display_ships(Ss).
+
+display_line_4([_, _, Ships, _]):-
+    length(Ships, L),
+    L1 is 5-L,
+    display_ships(Ships),
+    generate_empty_space(s1, L1).
+
+display_line_5([_, _, _, Building]):-
+    translate(Building, B),
+    translate(s1, S),
+    write(S),
+    write(B),
+    write(S).
+
+
 %% Wormhole displays
 
-display_wormhole_line_2:-
+display_line_2([wormhole]):-
     write(@@@).
 
-display_wormhole_line_3:-
+display_line_3([wormhole]):-
     write(@),
     translate(s3, S),
     write(S),
     write(@).
 
-display_wormhole_line_4:-
-    display_wormhole_line_3.
+display_line_4([wormhole]):-
+    display_line_3([wormhole]).
 
-display_wormhole_line_5:-
-    display_wormhole_line_2.
+display_line_5([wormhole]):-
+    display_line_2([wormhole]).
 
-display_wormhole_test:-
-    display_wormhole_line_2, nl,
-    display_wormhole_line_3, nl,
-    display_wormhole_line_4, nl,
-    display_wormhole_line_5.
+display_test([wormhole]):-
+    display_line_2([wormhole]), nl,
+    display_line_3([wormhole]), nl,
+    display_line_4([wormhole]), nl,
+    display_line_5([wormhole]).
 
 %% Black hole displays
 
-display_blackhole_line_2:-
+display_line_2([blackhole]):-
     write(###).
 
-display_blackhole_line_3:-
+display_line_3([blackhole]):-
     write(#####).
 
-display_blackhole_line_4:-
-    display_blackhole_line_3.
+display_line_4([blackhole]):-
+    display_line_3([blackhole]).
 
-display_blackhole_line_5:-
-    display_blackhole_line_2.
+display_line_5([blackhole]):-
+    display_line_2([blackhole]).
 
-display_blackhole_test:-
-    display_blackhole_line_2, nl,
-    display_blackhole_line_3, nl,
-    display_blackhole_line_4, nl,
-    display_blackhole_line_5.
+display_test([blackhole]):-
+    display_line_2([blackhole]), nl,
+    display_line_3([blackhole]), nl,
+    display_line_4([blackhole]), nl,
+    display_line_5([blackhole]).
 
 display_board_test([B1|Bs]):-
     display_board_case(B1),
