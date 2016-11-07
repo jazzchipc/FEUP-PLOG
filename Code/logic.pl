@@ -39,12 +39,12 @@ none - none
 
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
+    [[star1, player1, [], none], [star2, free, [], none], [star2, free, [], none]],
     [[home, player1, [shipA, shipB, shipC, shipD], none], [star2, free, [], none], [emptyS, free, [], none]],
     [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
+    [[star1, free, [], none], [star2, free, [], none], [star2, player1, [], none]]
     ]
     ).
 
@@ -214,7 +214,7 @@ playerTurn(WhoIsPlaying):-
     % check if ship can indeed travel
 
     write('Select row the ship is in now: '),
-    read(CurrentRow),
+    read(CurrentRow).
     % check row limits
 
     /*write('Select row to travel to: '),
@@ -261,10 +261,20 @@ getBoardPieces(Board, Piece):-
 getScoreFromPiece(Piece, Score):-
     isStarSystem(Piece), starSystemScore(Piece, Score).
 
-getScoreOfPlayer(Player, Board, Score):-
+:- dynamic total_score/1.
+
+total_score(0).
+
+getScoreOfPlayer(Player, Board, TotalScore):-
     getBoardPieces(Board, Piece),
     systemBelongsToPlayer(Player, Piece),
-    getScoreFromPiece(Piece, Score).
+    getScoreFromPiece(Piece, Score),
+
+    retract(total_score(C)),
+    C1 is (C + Score) /* or C1 is C+1 */,
+    assertz(total_score(C1)),
+    
+    total_score(TotalScore).
 
 /**** GET SHIP POSITION ****/
 
