@@ -40,7 +40,7 @@ none - none
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [shipAdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
+    [[home, player1, [shipA, shipB, shipC, shipD], none], [star2, free, [], none], [emptyS, free, [], none]],
     [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
@@ -52,40 +52,35 @@ initial_logic_board([
 
 %% Get cell type
 
-isStarSystem1(star1).
-isStarSystem2(star2).
-isStarSystem3(star3).
+isStarSystem1([star1, _ , _, _]).
+isStarSystem2([star2, _ , _, _]).
+isStarSystem3([star3, _ , _, _]).
 
 isStarSystem(X):-
     isStarSystem1(X);
     isStarSystem2(X);
     isStarSystem3(X).
 
-isEmptySystem(emptyS).
+isEmptySystem([emptyS, _ , _, _]).
 
-isNebulaSystem(nebula).
+isNebulaSystem([nebula, _ , _, _]).
 
-isBlackhole(blackhole). 
+isBlackhole([blackhole]). 
 
-isWormhole(wormhole). 
-
-isCellBlackhole([X|[]]):-
-    isBlackhole(X).
-
-isCellWormhole([X|[]]):-
-    isWormhole(X).
+isWormhole([wormhole]). 
 
 %% Get owner
 
-isSystemFree(free).
+isSystemFree([_, free, _, _]).
 
-isSystemPlayer1(1).
+systemBelongsToPlayer(Player, [_, Player, _, _]).
 
-isSystemPlayer2(2).
+systemHasShip(Ship, [_, _, Ships, _]):-
+    member(Ship, Ships).
 
-isSystemOwned(X):-
-    isSystemPlayer1(X);
-    isSystemPlayer2(X).
+isSystemOwned(System):-
+    systemBelongsToPlayer(player1, System);
+    systemBelongsToPlayer(player2, System).
 
 %% Get ships
 
@@ -143,10 +138,10 @@ shipBelongsToPlayer2(X):-
 
 %% Get buildings
 
-isSystemNotColonized(none).
+isSystemNotColonized([_, _, _, none]).
 
-hasSystemColony(colony).
-hasSystemTradeStation(trade).
+hasSystemColony([_, _, _, colony]).
+hasSystemTradeStation([_, _, _, trade]).
 
 isSystemColonized(X):-
     hasSystemColony(X);
@@ -173,12 +168,20 @@ replace(OldPiece, NewPiece, [X|Xs], [Y|Ys]):-
 
 getShip([_,_,Ship,_], Ship).
 
-% Get board piece given the ship user wants
+getPieceGivenShipAux(Ship, [], Column).
+getPieceGivenShipAux(Ship, [_, _, Ship, _|Xs], Column).
+getPieceGivenShipAux(Ship, [X|Xs], Column):-
+    NewColumn is Column + 1,
+    getPieceGivenShipAux(Ship, Xs, NewColumn).
 
-setPieceGivenShip([X|Xs], X).
+/*Given the ship and the board, returns the row and column that ships is situated*/
+getPieceGivenShip(Ship, [X|Xs], Row, Column, Counter):-
+    getPieceGivenShipAux(Ship, X, 0),
+    NewRow is Counter + 1,
+    getPieceGivenShip(Ship, Xs, NewRow, Column).
 
 getPieceGivenShipAux(shipA, [], PieceToMove).
-getPieceGivenShipAux(shipA, [_,_,DifferentShip,_|Xs], PieceToMove):-
+insertShipOnPiece(Ship, [_,_,Ship_]).
     getPieceGivenShipAux(shipA, Xs).
 getPieceGivenShipAux(shipA, [Type,Owner,shipA,Ocupation|Xs], PieceToMove):-
     setPieceGivenShip([Type,Owner,shipA,Ocupation], PieceToMove).
@@ -196,19 +199,23 @@ assignShip(c).
 assignShip(d).
 
 playerTurn(WhoIsPlaying):-
-    initial_logic_board(BoardIn),
+    board(BoardIn),
 
     write('*** Player '),
     write(WhoIsPlaying),
     write(' turn ***'), nl, nl,
 
-    write('Select ship to move: '),
+    /*write('Select ship: '),
     read(ShipToMove),
-    assignShip(ShipToMove),
-    write(ShipToMove), nl,
+    read(ShipSelection),
+    write('Escrevi esta merda: '),
+    write(ShipSelection).
+    getPieceGivenShip(ShipSelection, BoardIn, CurrentRow, CurrentColumn, 0),*/
+    % check if ship can indeed travel
 
-    getPieceGivenShip(shipA, BoardIn, PieceToMove),
-    write(PieceToMove).
+    write('Select row the ship is in now: '),
+    read(CurrentRow),
+    % check row limits
 
     /*write('Select row to travel to: '),
     read(DestinationRow),
@@ -233,3 +240,33 @@ playerTurn(WhoIsPlaying):-
     write(BoardOut), nl, nl,*/
 
     %BoardIn is BoardOut.
+
+
+
+/**** CALCULATE SCORE FUNCTIONS ****/
+
+starSystemScore(StarSystem, Score):-
+    (isStarSystem1(StarSystem), Score is 1);
+    (isStarSystem2(StarSystem), Score is 2);
+    (isStarSystem3(StarSystem), Score is 3).
+
+%%score(nebula) --> depends on how many the player has
+
+getRowPieces(Board, NumOfRow, Piece):-
+    getPiece(NumOfRow, _, Board, Piece).
+
+getBoardPieces(Board, Piece):-
+    getRowPieces(Board, _, Piece).
+
+getScoreFromPiece(Piece, Score):-
+    isStarSystem(Piece), starSystemScore(Piece, Score).
+
+getScoreOfPlayer(Player, Board, Score):-
+    getBoardPieces(Board, Piece),
+    systemBelongsToPlayer(Player, Piece),
+    getScoreFromPiece(Piece, Score).
+
+/**** GET SHIP POSITION ****/
+
+%% initial_logic_board(Board), getBoardPieces(Board, Piece), systemHasShip(shipA, Piece), getPiece(Y, X, Board, Piece) == retornar X e Y da shipA
+

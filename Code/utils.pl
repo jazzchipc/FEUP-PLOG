@@ -29,4 +29,12 @@ display_list([E1|Es]):-
     write(E1),
     display_list(Es).
 
+flatten2([], []) :- !.
+flatten2([L|Ls], FlatL) :-
+    !,
+    flatten2(L, NewL),
+    flatten2(Ls, NewLs),
+    append(NewL, NewLs, FlatL).
+flatten2(L, [L]).
+
 /*** END OF LIST UTILS ***/
