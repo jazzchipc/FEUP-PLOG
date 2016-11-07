@@ -40,7 +40,7 @@ none - none
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [shipA, shipB, shipC, shipD], none], [star2, free, [], none], [emptyS, free, [], none]],
+    [[home, player1, [shipAdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
     [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
@@ -173,43 +173,44 @@ replace(OldPiece, NewPiece, [X|Xs], [Y|Ys]):-
 
 getShip([_,_,Ship,_], Ship).
 
-getPieceGivenShipAux(Ship, [], Column).
-getPieceGivenShipAux(Ship, [_, _, Ship, _|Xs], Column).
-getPieceGivenShipAux(Ship, [X|Xs], Column):-
-    NewColumn is Column + 1,
-    getPieceGivenShipAux(Ship, Xs, NewColumn).
+% Get board piece given the ship user wants
 
-/*Given the ship and the board, returns the row and column that ships is situated*/
-getPieceGivenShip(Ship, [X|Xs], Row, Column, Counter):-
-    getPieceGivenShipAux(Ship, X, 0),
-    NewRow is Counter + 1,
-    getPieceGivenShip(Ship, Xs, NewRow, Column).
+setPieceGivenShip([X|Xs], X).
 
-insertShipOnPiece(Ship, [_,_,Ship_]).
+getPieceGivenShipAux(shipA, [], PieceToMove).
+getPieceGivenShipAux(shipA, [_,_,DifferentShip,_|Xs], PieceToMove):-
+    getPieceGivenShipAux(shipA, Xs).
+getPieceGivenShipAux(shipA, [Type,Owner,shipA,Ocupation|Xs], PieceToMove):-
+    setPieceGivenShip([Type,Owner,shipA,Ocupation], PieceToMove).
+
+getPieceGivenShip(shipA, [], PieceToMove).
+getPieceGivenShip(shipA, [X|Xs], PieceToMove):-
+    getPieceGivenShipAux(shipA, X, PieceToMove),
+    getPieceGivenShip(shipA, Xs, PieceToMove).
+
+% Does player turn
+
+assignShip(a).
+assignShip(b).
+assignShip(c).
+assignShip(d).
 
 playerTurn(WhoIsPlaying):-
-    board(BoardIn),
+    initial_logic_board(BoardIn),
 
     write('*** Player '),
     write(WhoIsPlaying),
     write(' turn ***'), nl, nl,
 
-    /*write('Select ship: '),
-    read(ShipSelection),
-    write('Escrevi esta merda: '),
-    write(ShipSelection).
-    getPieceGivenShip(ShipSelection, BoardIn, CurrentRow, CurrentColumn, 0),*/
-    % check if ship can indeed travel
+    write('Select ship to move: '),
+    read(ShipToMove),
+    assignShip(ShipToMove),
+    write(ShipToMove), nl,
 
-    write('Select row the ship is in now: '),
-    read(CurrentRow),
-    % check row limits
+    getPieceGivenShip(shipA, BoardIn, PieceToMove),
+    write(PieceToMove).
 
-    write('Select column the ship is in now: '),
-    read(CurrentColumn),
-    % check column limits
-
-    write('Select row to travel to: '),
+    /*write('Select row to travel to: '),
     read(DestinationRow),
     % check row limits
 
@@ -220,7 +221,6 @@ playerTurn(WhoIsPlaying):-
     getPiece(CurrentRow, CurrentColumn, BoardIn, CurrentPiece),
     getPiece(DestinationRow, DestinationColumn, BoardIn, DestinationPiece),
     getShip(CurrentPiece, Ship),
-    insertShipOnPiece(Ship, DestinationPiece),
     % replace(CurrentPiece, DestinationPiece, BoardIn, BoardOut),
 
     write('OldBoard: '),
@@ -230,4 +230,6 @@ playerTurn(WhoIsPlaying):-
     write('NewPiece: '),
     write(DestinationPiece), nl,
     write('NewBoard: '),
-    write(BoardOut), nl, nl.
+    write(BoardOut), nl, nl,*/
+
+    %BoardIn is BoardOut.
