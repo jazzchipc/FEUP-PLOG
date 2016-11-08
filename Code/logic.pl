@@ -215,21 +215,20 @@ getTotalScoreOfPlayer(Player, Board, TotalScore):-
 apply0([A, _, _, _], A).
 apply1([_, A, _, _], A).
 apply2([_, _, [A], _], A).
+apply3([_, _, _, A], A).
 
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 3).
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 3):-
+    apply3(NewPiece, none).
 
 setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 2):-
-    write(Ship), nl,
     apply2(NewPiece, Ship),
     setPieceToMove(Xs, Ys, Ship, NewPiece, 3).
 
 setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 1):-
-    write(X), nl,
     apply1(NewPiece, X),
     setPieceToMove(Xs, Ys, Ship, NewPiece, 2).
 
 setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
-    write(Y), nl,
     apply0(NewPiece, Y),
     setPieceToMove(Xs, Ys, Ship, NewPiece, 1).
 
@@ -237,16 +236,14 @@ setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
 removeShipFromPiece([Type, Owner, Ships, Building], Ship, [Type, Owner, NewShips, Building]):-
     delete(Ships, Ship, NewShips).
 
-% Update board
-updateBoard(Board, OldPiece, NewPiece).
-
 playerTurn(WhoIsPlaying):-
     initial_logic_board(Board),
-    display_board(Board), nl, nl,
 
     write('*** Player '),
     write(WhoIsPlaying),
     write(' turn ***'), nl, nl,
+
+    display_board(Board), nl, nl,
 
     write('Select ship: '),
     read(UserShipToMove),
@@ -279,7 +276,6 @@ playerTurn(WhoIsPlaying):-
     write('This is the old piece: '),
     write(OldPiece), nl,
 
-    replace(PieceToMove, OldPiece, Board, UpdatedBoard),
-    display_board(UpdatedBoard).
-
-    % updateBoard(Board, OldPiece, NewPiece).
+    replace(PieceToMove, OldPiece, Board, UpdatedBoard1),
+    replace(DestinationPiece, NewPiece, UpdatedBoard1, FinalUpdatedBoard),
+    display_board(FinalUpdatedBoard).
