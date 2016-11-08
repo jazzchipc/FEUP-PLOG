@@ -41,7 +41,7 @@ none - none
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
     [[star1, player1, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [shipAdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
+    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
     [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
@@ -172,13 +172,6 @@ replace(OldPiece, NewPiece, Row, Column, [X|Xs], [X|Ys]):-
 
 getShip([_,_,Ship,_], Ship).
 
-% Does player turn
-
-assignShip(a, shipAdamaged).
-assignShip(b).
-assignShip(c).
-assignShip(d).
-
 /**** CALCULATE SCORE FUNCTIONS ****/
 
 starSystemScore(StarSystem, Score):-
@@ -239,12 +232,16 @@ setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
 removeShipFromPiece([Type, Owner, Ships, Building], Ship, [Type, Owner, NewShips, Building]):-
     delete(Ships, Ship, NewShips).
 
-playerTurn(WhoIsPlaying):-
-    initial_logic_board(Board),
+assignShip(a, shipAdamaged).
+assignShip(b, shipBdamaged).
+assignShip(c, shipCdamaged).
+assignShip(d, shipDdamaged).
 
-    write('*** Player '),
+% Does player turn
+playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
+    write('*************** Player '),
     write(WhoIsPlaying),
-    write(' turn ***'), nl, nl,
+    write(' turn ***************'), nl, nl,
 
     display_board(Board), nl, nl,
 
@@ -259,11 +256,11 @@ playerTurn(WhoIsPlaying):-
     write('This is the piece to move: '),
     write(PieceToMove), nl,
 
-    write('Select row to travel to: '),
-    read(DestinationRow),
+    write('Select row to travel to'), nl,
+    read(DestinationRow), nl,
     % check row limits
 
-    write('Select column to travel to: '),
+    write('Select column to travel to'), nl,
     read(DestinationColumn), nl,
     % check column limits
 
