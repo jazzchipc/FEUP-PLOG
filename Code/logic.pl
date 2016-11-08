@@ -155,17 +155,20 @@ getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
     nth0(Column, MyRow, Piece).
 
-replaceElement(_, _, [], []).
-replaceElement(O, R, [O|Xs], [R|Ys]):-
-    replaceElement(O, R, Xs, Ys).
-replaceElement(O, R, [X|Xs], [X|Ys]):-
-    X \= O,
-    replaceElement(O, R, Xs, Ys).
+replaceElement(_, _, _, [], []).
+replaceElement(O, R, 0, [O|Xs], [R|Ys]):-
+    replaceElement(O, R, 20, Xs, Ys).
+replaceElement(O, R, Column, [X|Xs], [X|Ys]):-
+    NewColumn is Column - 1,
+    replaceElement(O, R, NewColumn, Xs, Ys).
 
-replace(_, _, [], []).
-replace(OldPiece, NewPiece, [X|Xs], [Y|Ys]):-
-    replaceElement(OldPiece, NewPiece, X, Y),
-    replace(OldPiece, NewPiece, Xs, Ys).
+replace(_, _, _, _, [], []).
+replace(OldPiece, NewPiece, 0, Column, [X|Xs], [Y|Ys]):-
+    replaceElement(OldPiece, NewPiece, Column, X, Y),
+    replace(OldPiece, NewPiece, 20, Column, Xs, Ys).
+replace(OldPiece, NewPiece, Row, Column, [X|Xs], [X|Ys]):-
+    NewRow is Row - 1,
+    replace(OldPiece, NewPiece, NewRow, Column, Xs, Ys).
 
 getShip([_,_,Ship,_], Ship).
 
@@ -252,7 +255,7 @@ playerTurn(WhoIsPlaying):-
 
     getBoardPieces(Board, PieceToMove),
     systemHasShip(ShipToMove, PieceToMove),
-    getPiece(PieceToMoveY, PieceToMoveX, Board, PieceToMove),
+    getPiece(PieceToMoveRow, PieceToMoveColumn, Board, PieceToMove),
     write('This is the piece to move: '),
     write(PieceToMove), nl,
 
@@ -276,6 +279,6 @@ playerTurn(WhoIsPlaying):-
     write('This is the old piece: '),
     write(OldPiece), nl,
 
-    replace(PieceToMove, OldPiece, Board, UpdatedBoard1),
-    replace(DestinationPiece, NewPiece, UpdatedBoard1, FinalUpdatedBoard),
+    replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, UpdatedBoard1),
+    replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, UpdatedBoard1, FinalUpdatedBoard),
     display_board(FinalUpdatedBoard).
