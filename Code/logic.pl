@@ -1,4 +1,5 @@
 :- use_module(library(lists)).
+:- use_module(library(aggregate)).
 :- include('board.pl').
 :- include('utils.pl').
 
@@ -39,7 +40,7 @@ none - none
 
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
+    [[star1, player1, [], none], [star2, free, [], none], [star2, free, [], none]],
     [[home, player1, [shipAdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
     [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
     [[blackhole], [wormhole], [blackhole]],
@@ -197,16 +198,16 @@ getScoreFromPiece(Piece, Score):-
 
 total_score(0).
 
-getScoreOfPlayer(Player, Board, TotalScore):-
+getScoreOfPlayerPiece(Player, Board, Piece, Score):-
     getBoardPieces(Board, Piece),
     systemBelongsToPlayer(Player, Piece),
-    getScoreFromPiece(Piece, Score),
+    getScoreFromPiece(Piece, Score).
 
-    retract(total_score(C)),
-    C1 is (C + Score) /* or C1 is C+1 */,
-    assertz(total_score(C1)),
-    
-    total_score(TotalScore).
+getTotalScoreOfPlayer(Player, Board, TotalScore):-
+    findall(Score, getScoreOfPlayerPiece(Player, Board, Piece, Score), List),
+
+    list_sum(List, Total),
+    TotalScore is Total.
 
 /**** GET SHIP POSITION ****/
 
