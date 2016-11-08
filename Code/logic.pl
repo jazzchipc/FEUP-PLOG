@@ -1,4 +1,5 @@
 :- use_module(library(lists)).
+:- use_module(library(aggregate)).
 :- include('board.pl').
 :- include('utils.pl').
 
@@ -265,18 +266,20 @@ getScoreFromPiece(Piece, Score):-
 
 total_score(0).
 
-getScoreOfPlayer(Player, Board, TotalScore):-
+getScoreOfPlayerPiece(Player, Board, Piece, Score):-
     getBoardPieces(Board, Piece),
     systemBelongsToPlayer(Player, Piece),
-    getScoreFromPiece(Piece, Score),
+    getScoreFromPiece(Piece, Score).
 
-    retract(total_score(C)),
-    C1 is (C + Score) /* or C1 is C+1 */,
-    assertz(total_score(C1)),
-    
-    total_score(TotalScore).
+getTotalScoreOfPlayer(Player, Board, TotalScore):-
+    findall(Score, getScoreOfPlayerPiece(Player, Board, Piece, Score), List),
+
+    list_sum(List, Total),
+    TotalScore is Total.
 
 /**** GET SHIP POSITION ****/
 
 %% initial_logic_board(Board), getBoardPieces(Board, Piece), systemHasShip(shipA, Piece), getPiece(Y, X, Board, Piece) == retornar X e Y da shipA
+
+%%initial_logic_board(B), findall(S, getScoreOfPlayerPiece(player1, B, P, S), L).
 
