@@ -233,21 +233,28 @@ setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
     apply0(NewPiece, Y),
     setPieceToMove(Xs, Ys, Ship, NewPiece, 1).
 
+% Removes ship on the old piece
+removeShipFromPiece([Type, Owner, Ships, Building], Ship, [Type, Owner, NewShips, Building]):-
+    delete(Ships, Ship, NewShips).
+
+% Update board
+updateBoard(Board, OldPiece, NewPiece).
 
 playerTurn(WhoIsPlaying):-
     initial_logic_board(Board),
+    display_board(Board), nl, nl,
 
     write('*** Player '),
     write(WhoIsPlaying),
     write(' turn ***'), nl, nl,
 
     write('Select ship: '),
-    read(ShipToMove),
-    assignShip(ShipToMove, Use),
+    read(UserShipToMove),
+    assignShip(UserShipToMove, ShipToMove),
     % check if ship can indeed travel
 
     getBoardPieces(Board, PieceToMove),
-    systemHasShip(Use, PieceToMove),
+    systemHasShip(ShipToMove, PieceToMove),
     getPiece(PieceToMoveY, PieceToMoveX, Board, PieceToMove),
     write('This is the piece to move: '),
     write(PieceToMove), nl,
@@ -264,6 +271,15 @@ playerTurn(WhoIsPlaying):-
     write('This is the destination piece: '),
     write(DestinationPiece), nl,
 
-    setPieceToMove(PieceToMove, DestinationPiece, Use, NewPiece, 0),
+    setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, NewPiece, 0),
     write('This is the new piece: '),
-    write(NewPiece), nl.
+    write(NewPiece), nl,
+
+    removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
+    write('This is the old piece: '),
+    write(OldPiece), nl,
+
+    replace(PieceToMove, OldPiece, Board, UpdatedBoard),
+    display_board(UpdatedBoard).
+
+    % updateBoard(Board, OldPiece, NewPiece).

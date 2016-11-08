@@ -399,7 +399,7 @@ display_line_8_aux(NumberHexagons, LastRow):-
         translate(db, CloseHex),
         translate(s3, SpaceInsideHex2),
         write(CloseHex),
-        display_piece_line_2(CurrentPiece),
+        %display_piece_line_3(CurrentPiece),
         write(OpenHex),
         write(SpaceInsideHex2),
         display_line_8_aux(N1, RemainingPieces);
@@ -418,7 +418,7 @@ display_line_9_aux(NumberHexagons, LastRow):-
         translate(db, CloseHex),
         translate(s5, SpaceBetweenHex),
         write(CloseHex),
-        display_piece_line_4(CurrentPiece),
+        %display_piece_line_4(CurrentPiece),
         write(OpenHex),
         write(SpaceBetweenHex),
         display_line_9_aux(N1, RemainingPieces);
@@ -453,20 +453,20 @@ display_end_lines(NumOfCols, LastRow):-
     display_line_8(0, NumOfCols, LastRow),
     display_line_9(0, NumOfCols, LastRow).
 
-display_board:-
-    initial_logic_board(B), %% created in logic.pl
-    length(B, NumOfRows),
+display_board(Board):-
+    % initial_logic_board(B), %% created in logic.pl
+    length(Board, NumOfRows),
 
     1 is mod(NumOfRows, 2), /**** Until we can work with even rows ****/
 
-    first(FirstRow, B),
+    first(FirstRow, Board),
     length(FirstRow, NumOfElementsFirstRow),
 
-    last(LastRow, B),
+    last(LastRow, Board),
     length(LastRow, NumOfElementsLastRow),
 
     display_start_lines(NumOfElementsFirstRow, FirstRow),
-    display_num_linhas(NumOfRows//2 , NumOfElementsFirstRow, 0, B),
+    display_num_linhas(NumOfRows//2 , NumOfElementsFirstRow, 0, Board),
     display_end_lines(NumOfElementsLastRow, LastRow).
 
 display:- display_board.
