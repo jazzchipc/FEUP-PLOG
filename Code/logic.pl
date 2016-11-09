@@ -209,6 +209,29 @@ getTotalScoreOfPlayer(Player, Board, TotalScore):-
     list_sum(List, Total),
     TotalScore is Total.
 
+/**** VERIFY MOVE ****/
+
+verifyValidDirectionOddRow(Xi, Yi, Xf, Yf):- 
+    DifY is (Yf - Yi), DifX is(Xf-Xi),
+
+    ((DifX >= 0, abs(DifX) =:= (abs(DifY//2)))
+    ;
+    (DifX =< 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
+
+
+verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
+    ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi)
+    ;
+    ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf))).
+
+verifyMove(Board, Xi, Yi, Xf, Yf, InitialCell, FinalCell):-
+    getPiece(Yi, Xi, Board, InitialCell),
+    getPiece(Yf, Xf, Board, FinalCell),
+
+    
+    (DifX is (Xf - Xi), DifY is (Yf - Yi), AbsX is abs(DifX), AbsY is abs(DifY), AbsX=:=AbsY).
+
+
 /**** GET SHIP POSITION ****/
 
 % Copies only what is needed to NewPiece
