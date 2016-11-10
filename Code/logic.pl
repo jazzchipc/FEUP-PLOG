@@ -49,6 +49,17 @@ initial_logic_board([
     ]
     ).
 
+surround_test_board([
+    [[star2, free, [], none], [star2, free, [], none], [wormhole]],
+    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
+    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
+    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [], none]],
+    [[blackhole], [wormhole], [blackhole]],
+    [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
+    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
+    ]
+    ).
+
 /*** GET INFORMATION FROM CELLS ***/
 
 %% Get cell type
@@ -178,17 +189,17 @@ apply1([_, A, _, _], A).
 apply2([_, _, [A], _], A).
 apply3([_, _, _, A], A).
 
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 3):-
-    apply3(NewPiece, none).
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 2):-
+setPieceToMove([X|Xs], [Y|Ys], Ship, Building, NewPiece, 3):-
+    apply3(NewPiece, Building).
+setPieceToMove([X|Xs], [Y|Ys], Ship, Building, NewPiece, 2):-
     apply2(NewPiece, Ship),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 3).
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 1):-
+    setPieceToMove(Xs, Ys, Ship, Building, NewPiece, 3).
+setPieceToMove([X|Xs], [Y|Ys], Ship, Building, NewPiece, 1):-
     apply1(NewPiece, X),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 2).
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
+    setPieceToMove(Xs, Ys, Ship, Building, NewPiece, 2).
+setPieceToMove([X|Xs], [Y|Ys], Ship, Building, NewPiece, 0):-
     apply0(NewPiece, Y),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 1).
+    setPieceToMove(Xs, Ys, Ship, Building, NewPiece, 1).
 
 % Removes ship on the old piece
 removeShipFromPiece([Type, Owner, Ships, Building], Ship, [Type, Owner, NewShips, Building]):-
@@ -203,6 +214,10 @@ assignShip(w, shipWdamaged).
 assignShip(x, shipXdamaged).
 assignShip(y, shipYdamaged).
 assignShip(z, shipZdamaged).
+
+% Assigns building based on user input
+assignBuilding(t, trade).
+assignBuilding(c, colony).
 
 % Writes N newlines
 clearScreen(0).
@@ -262,33 +277,41 @@ myDebug(ShipToMove, PieceToMove, DestinationPiece, NewPiece, OldPiece):-
 
 % Checks if ship to move belongs to the player who is playing
 canPlayerMoveSelectedShip(1, Ship):-
-    (Ship == shipWdamaged; Ship == shipXdamaged; Ship == shipYdamaged; Ship == shipZdamaged),
-    format('The ship ~p is not yours to command!~n', [Ship]),
+    (Ship == shipAdamaged; Ship == shipBdamaged; Ship == shipCdamaged; Ship == shipDdamaged);
+    !,
+    write('***** You entered a ship that is not yours to command! *****'), nl,
     fail.
-canPlayerMoveSelectedShip(1, Ship).
 canPlayerMoveSelectedShip(2, Ship):-
-    (Ship == shipAdamaged; Ship == shipBdamaged; Ship == shipCdamaged; Ship == shipDdamaged),
-    format('The ship ~p is not yours to command!~n', [Ship]),
+    (Ship == shipWdamaged; Ship == shipXdamaged; Ship == shipYdamaged; Ship == shipZdamaged);
+    !,
+    write('***** You entered a ship that is not yours to command! *****'), nl,
     fail.
-canPlayerMoveSelectedShip(2, Ship).
 
 % Checks if the row inserted by the player exists
 checkRowLimits(Board, DestinationRow):-
     length(Board, NumOfRows),
     DestinationRow > NumOfRows,
-    format('The board only has ~d rows, cant go to row ~d~n', [NumOfRows, DestinationRow]),
+    !,
+    format('***** The board only has ~d rows, cant go to row ~d*****~n', [NumOfRows, DestinationRow]),
     fail.
 checkRowLimits(Board, DestinationRow).
 
 checkColumnLimits([X|Xs], 0, DestinationColumn):-
     length(X, NumOfColumns),
     DestinationColumn > NumOfColumns,
-    format('The board only has ~d columns, cant go to column ~d~n', [NumOfColumns, DestinationColumn]),
+    !,
+    format('***** The board only has ~d columns, cant go to column ~d*****~n', [NumOfColumns, DestinationColumn]),
     fail.
 checkColumnLimits([X|Xs], 0, DestinationColumn).
 checkColumnLimits([X|Xs], DestinationRow, DestinationColumn):-
     NewRow is DestinationRow - 1,
     checkColumnLimits(Xs, NewRow, DestinationColumn).
+
+checkValidBuilding(Building):-
+    (Building == trade; Building == colony);
+    !,
+    write('***** Invalid input, please only type t or c for the building!*****'), nl,
+    fail.
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
@@ -301,7 +324,7 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     !,
     repeat,
     write('Select ship'), nl,
-    read(UserShipToMove),
+    read(UserShipToMove), nl,
     assignShip(UserShipToMove, ShipToMove),
     /*write('This is the selected ship: '),
     write(ShipToMove), nl,*/
@@ -323,13 +346,20 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     repeat,
     write('Select column to travel to'), nl,
     read(DestinationColumn), nl,
-    checkColumnLimits(Board, DestinationColumn, DestinationRow),
+    checkColumnLimits(Board, DestinationRow, DestinationColumn),
+
+    !,
+    repeat,
+    format('Player ~p, what building would you like to construct?~n   t --> Trade Station~n   c --> Colony~n', [WhoIsPlaying]),
+    read(UserBuilding),
+    assignBuilding(UserBuilding, Building),
+    checkValidBuilding(Building),
 
     getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
     /*write('This is the destination piece: '),
     write(DestinationPiece), nl,*/
 
-    setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, NewPiece, 0),
+    setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, Building, NewPiece, 0),
     /*write('This is the new piece: '),
     write(NewPiece), nl,*/
 
@@ -338,8 +368,5 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     write(OldPiece), nl,*/
 
     replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, UpdatedBoard1),
-    replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, UpdatedBoard1, FinalUpdatedBoard),
-    
-    display_board(FinalUpdatedBoard),
-    
+    replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, UpdatedBoard1, FinalUpdatedBoard),    
     clearScreen(10).
