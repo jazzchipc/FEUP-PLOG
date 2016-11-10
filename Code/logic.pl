@@ -237,6 +237,12 @@ assignShip(b, shipBdamaged).
 assignShip(c, shipCdamaged).
 assignShip(d, shipDdamaged).
 
+clearScreen(0).
+clearScreen(N):-
+    N1 is N - 1,
+    nl,
+    clearScreen(N1).
+
 % Does player turn
 playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     write('*************** Player '),
@@ -253,8 +259,8 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     getBoardPieces(Board, PieceToMove),
     systemHasShip(ShipToMove, PieceToMove),
     getPiece(PieceToMoveRow, PieceToMoveColumn, Board, PieceToMove),
-    write('This is the piece to move: '),
-    write(PieceToMove), nl,
+    /*write('This is the piece to move: '),
+    write(PieceToMove), nl,*/
 
     write('Select row to travel to'), nl,
     read(DestinationRow), nl,
@@ -265,17 +271,17 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     % check column limits
 
     getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
-    write('This is the destination piece: '),
-    write(DestinationPiece), nl,
+    /*write('This is the destination piece: '),
+    write(DestinationPiece), nl,*/
 
     setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, NewPiece, 0),
-    write('This is the new piece: '),
-    write(NewPiece), nl,
+    /*write('This is the new piece: '),
+    write(NewPiece), nl,*/
 
     removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
-    write('This is the old piece: '),
-    write(OldPiece), nl,
+    /*write('This is the old piece: '),
+    write(OldPiece), nl,*/
 
     replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, UpdatedBoard1),
     replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, UpdatedBoard1, FinalUpdatedBoard),
-    display_board(FinalUpdatedBoard).
+    clearScreen(10).
