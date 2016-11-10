@@ -40,12 +40,12 @@ none - none
 
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
-    [[star1, player1, [], none], [star2, free, [], none], [star2, free, [], none]],
+    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
     [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
+    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, player1, [], none]]
+    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
     ]
     ).
 
@@ -151,10 +151,12 @@ isSystemColonized(X):-
 
 /** BOARD CELL FUNCTIONS **/
 
+% Returns Piece on Row and Column
 getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
     nth0(Column, MyRow, Piece).
 
+% Replaces element O to R on Board only one time
 replaceElement(_, _, _, [], []).
 replaceElement(O, R, 0, [O|Xs], [R|Ys]):-
     replaceElement(O, R, 20, Xs, Ys).
@@ -169,6 +171,45 @@ replace(OldPiece, NewPiece, 0, Column, [X|Xs], [Y|Ys]):-
 replace(OldPiece, NewPiece, Row, Column, [X|Xs], [X|Ys]):-
     NewRow is Row - 1,
     replace(OldPiece, NewPiece, NewRow, Column, Xs, Ys).
+
+% Makes NewPiece as the final piece to display in the board
+apply0([A, _, _, _], A).
+apply1([_, A, _, _], A).
+apply2([_, _, [A], _], A).
+apply3([_, _, _, A], A).
+
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 3):-
+    apply3(NewPiece, none).
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 2):-
+    apply2(NewPiece, Ship),
+    setPieceToMove(Xs, Ys, Ship, NewPiece, 3).
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 1):-
+    apply1(NewPiece, X),
+    setPieceToMove(Xs, Ys, Ship, NewPiece, 2).
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
+    apply0(NewPiece, Y),
+    setPieceToMove(Xs, Ys, Ship, NewPiece, 1).
+
+% Removes ship on the old piece
+removeShipFromPiece([Type, Owner, Ships, Building], Ship, [Type, Owner, NewShips, Building]):-
+    delete(Ships, Ship, NewShips).
+
+% Assigns ship based on user input
+assignShip(a, shipAdamaged).
+assignShip(b, shipBdamaged).
+assignShip(c, shipCdamaged).
+assignShip(d, shipDdamaged).
+assignShip(w, shipWdamaged).
+assignShip(x, shipXdamaged).
+assignShip(y, shipYdamaged).
+assignShip(z, shipZdamaged).
+
+% Writes N newlines
+clearScreen(0).
+clearScreen(N):-
+    N1 is N - 1,
+    nl,
+    clearScreen(N1).
 
 getShip([_,_,Ship,_], Ship).
 
@@ -205,43 +246,49 @@ getTotalScoreOfPlayer(Player, Board, TotalScore):-
     list_sum(List, Total),
     TotalScore is Total.
 
-/**** GET SHIP POSITION ****/
+myDebug(ShipToMove, PieceToMove, DestinationPiece, NewPiece, OldPiece):-
+    write('This is the selected ship: '),
+    write(ShipToMove), nl,
+    write('This is the piece to move: '),
+    write(PieceToMove), nl,
+    write('This is the destination piece: '),
+    write(DestinationPiece), nl,
+    write('This is the new piece: '),
+    write(NewPiece), nl,
+    write('This is the old piece: '),
+    write(OldPiece), nl.
 
-% Copies only what is needed to NewPiece
-apply0([A, _, _, _], A).
-apply1([_, A, _, _], A).
-apply2([_, _, [A], _], A).
-apply3([_, _, _, A], A).
+/******************VALID MOVE FUNCTIONS******************/
 
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 3):-
-    apply3(NewPiece, none).
+% Checks if ship to move belongs to the player who is playing
+canPlayerMoveSelectedShip(1, Ship):-
+    (Ship == shipWdamaged; Ship == shipXdamaged; Ship == shipYdamaged; Ship == shipZdamaged),
+    format('The ship ~p is not yours to command!~n', [Ship]),
+    fail.
+canPlayerMoveSelectedShip(1, Ship).
+canPlayerMoveSelectedShip(2, Ship):-
+    (Ship == shipAdamaged; Ship == shipBdamaged; Ship == shipCdamaged; Ship == shipDdamaged),
+    format('The ship ~p is not yours to command!~n', [Ship]),
+    fail.
+canPlayerMoveSelectedShip(2, Ship).
 
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 2):-
-    apply2(NewPiece, Ship),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 3).
+% Checks if the row inserted by the player exists
+checkRowLimits(Board, DestinationRow):-
+    length(Board, NumOfRows),
+    DestinationRow > NumOfRows,
+    format('The board only has ~d rows, cant go to row ~d~n', [NumOfRows, DestinationRow]),
+    fail.
+checkRowLimits(Board, DestinationRow).
 
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 1):-
-    apply1(NewPiece, X),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 2).
-
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
-    apply0(NewPiece, Y),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 1).
-
-% Removes ship on the old piece
-removeShipFromPiece([Type, Owner, Ships, Building], Ship, [Type, Owner, NewShips, Building]):-
-    delete(Ships, Ship, NewShips).
-
-assignShip(a, shipAdamaged).
-assignShip(b, shipBdamaged).
-assignShip(c, shipCdamaged).
-assignShip(d, shipDdamaged).
-
-clearScreen(0).
-clearScreen(N):-
-    N1 is N - 1,
-    nl,
-    clearScreen(N1).
+checkColumnLimits([X|Xs], 0, DestinationColumn):-
+    length(X, NumOfColumns),
+    DestinationColumn > NumOfColumns,
+    format('The board only has ~d columns, cant go to column ~d~n', [NumOfColumns, DestinationColumn]),
+    fail.
+checkColumnLimits([X|Xs], 0, DestinationColumn).
+checkColumnLimits([X|Xs], DestinationRow, DestinationColumn):-
+    NewRow is DestinationRow - 1,
+    checkColumnLimits(Xs, NewRow, DestinationColumn).
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
@@ -251,10 +298,14 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
 
     display_board(Board), nl, nl,
 
-    write('Select ship: '),
+    !,
+    repeat,
+    write('Select ship'), nl,
     read(UserShipToMove),
     assignShip(UserShipToMove, ShipToMove),
-    % check if ship can indeed travel
+    /*write('This is the selected ship: '),
+    write(ShipToMove), nl,*/
+    canPlayerMoveSelectedShip(WhoIsPlaying, ShipToMove),
 
     getBoardPieces(Board, PieceToMove),
     systemHasShip(ShipToMove, PieceToMove),
@@ -262,13 +313,17 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     /*write('This is the piece to move: '),
     write(PieceToMove), nl,*/
 
+    !,
+    repeat,
     write('Select row to travel to'), nl,
     read(DestinationRow), nl,
-    % check row limits
+    checkRowLimits(Board, DestinationRow),
 
+    !,
+    repeat,
     write('Select column to travel to'), nl,
     read(DestinationColumn), nl,
-    % check column limits
+    checkColumnLimits(Board, DestinationColumn, DestinationRow),
 
     getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
     /*write('This is the destination piece: '),
@@ -284,4 +339,7 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
 
     replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, UpdatedBoard1),
     replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, UpdatedBoard1, FinalUpdatedBoard),
+    
+    display_board(FinalUpdatedBoard),
+    
     clearScreen(10).

@@ -5,11 +5,13 @@ startGame:-
     nl, nl,
 
     initial_logic_board(Board),
-    playGame(Board, 1).
+    playGame(Board, 2).
 
-playGame(Board, WhoIsPlaying):-
-        playerTurn(Board, WhoIsPlaying, UpdatedBoard),
-        !, 
-        WhoIsPlaying == 1,
-        playGame(UpdatedBoard, 2);
+playGame(Board, 1):-
+        playerTurn(Board, 1, UpdatedBoard),
+        !,
+        playGame(UpdatedBoard, 2).
+playGame(Board, 2):-
+        playerTurn(Board, 2, UpdatedBoard),
+        !,
         playGame(UpdatedBoard, 1).
