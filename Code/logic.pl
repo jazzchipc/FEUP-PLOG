@@ -311,18 +311,11 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 
 /**** USE THIS FUNCTION TO VERIFY THE MOVEMENT OF A SHIP ****/
 verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
-    ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi)
-    ;
-    ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)))
-    ;
-    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf))).
-
-verifyMove(Board, Xi, Yi, Xf, Yf, InitialCell, FinalCell):-
-    getPiece(Yi, Xi, Board, InitialCell),
-    getPiece(Yf, Xf, Board, FinalCell),
-
-    
-    (DifX is (Xf - Xi), DifY is (Yf - Yi), AbsX is abs(DifX), AbsY is abs(DifY), AbsX=:=AbsY).
+    ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
+    ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)));
+    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf)));
+    !,
+    fail.
 
 % Checks if the landing cell is valid
 checkValidLandingCell([_, free, _, _]).
@@ -376,9 +369,15 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
 
     % check if the destination cell is a valid one
+    !,
+    repeat,
     checkValidLandingCell(DestinationPiece),
 
     % check if can go in that direction
+    !,
+    repeat,
+    write('I am verifying...'), nl,
+    verifyValidGeometricDirection(PieceToMoveColumn, PieceToMoveRow, DestinationColumn, DestinationRow),
     
     !,
     repeat,
