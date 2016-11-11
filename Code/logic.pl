@@ -153,6 +153,22 @@ isSystemColonized(X):-
 
 % Auxiliar functions for adjacent cells
 
+getAdjacentEvenRow(Xin, Yin, Xout, Yout):-
+    (Xout is Xin, (Yout is Yin -2; Yout is Yin -1; Yout is Yin +1; Yout is Yin +2))
+    ;
+    (Xout is Xin +1, (Yout is Yin +1; Yout is Yin -1)).
+
+getAdjacentOddRow(Xin, Yin, Xout, Yout):-
+    (Xout is Xin, (Yout is Yin -2; Yout is Yin -1; Yout is Yin +1; Yout is Yin +2))
+    ;
+    (Xout is Xin -1, (Yout is Yin +1; Yout is Yin -1)).
+
+getAdjacent(Xin, Yin, Xout, Yout):-
+    (1 =:= mod(Yin, 2), getAdjacentOddRow(Xin, Yin, Xout, Yout))
+    ;
+    (0 =:= mod(Yin, 2), getAdjacentEvenRow(Xin, Yin, Xout, Yout)).
+
+
 adjacentEvenRow(X, Y, AdjX, AdjY):-
     (AdjX =:= X, AdjY \= Y, abs(AdjY - Y) =< 2);
     (AdjX =:= X+1, abs(AdjY - Y) =:= 1).
