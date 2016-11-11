@@ -347,35 +347,6 @@ verifyMove(Board, Xi, Yi, Xf, Yf, InitialCell, FinalCell):-
     
     (DifX is (Xf - Xi), DifY is (Yf - Yi), AbsX is abs(DifX), AbsY is abs(DifY), AbsX=:=AbsY).
 
-
-/**** GET SHIP POSITION ****/
-
-% Copies only what is needed to NewPiece
-apply0([A, _, _, _], A).
-apply1([_, A, _, _], A).
-apply2([_, _, [A], _], A).
-
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 3).
-
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 2):-
-    write(Ship), nl,
-    apply2(NewPiece, Ship),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 3).
-
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 1):-
-    write(X), nl,
-    apply1(NewPiece, X),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 2).
-
-setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
-    write(Y), nl,
-    apply0(NewPiece, Y),
-    setPieceToMove(Xs, Ys, Ship, NewPiece, 1).
-
-
-playerTurn(WhoIsPlaying):-
-    initial_logic_board(Board),
-
 % Does player turn
 playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     write('*************** Player '),
