@@ -376,7 +376,6 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     % check if can go in that direction
     !,
     repeat,
-    write('I am verifying...'), nl,
     verifyValidGeometricDirection(PieceToMoveColumn, PieceToMoveRow, DestinationColumn, DestinationRow),
     
     !,
@@ -394,6 +393,9 @@ updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveC
     replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, BoardChange1),
     replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, BoardChange1, UpdatedBoard).
 
+% Does AI turn
+playerTurn(Board, ai, UpdatedBoard).
+
 % Does player turn
 playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
     format('*************** Player ~d turn *************** ~n~n', [WhoIsPlaying]),
@@ -402,4 +404,4 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
     readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn),
     updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard),
    
-    clearScreen(50).
+    clearScreen(60).

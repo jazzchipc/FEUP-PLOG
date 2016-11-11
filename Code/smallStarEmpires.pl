@@ -1,20 +1,67 @@
 :- include('logic.pl').
 
+assignGameMode(1, playerVSplayer).
+assignGameMode(2, playerVSai).
+assignGameMode(3, aiVSai).
+
+displayMenu(GameMode):-
+        nl, nl,
+        write('**************************************************************************************'), nl,
+        write('********************************* SMALL STAR EMPIRES *********************************'), nl,
+        write('**************************************************************************************'), nl,
+        nl, nl,
+
+        write('***** Main Menu *****'), nl, nl,
+        write('Player VS Player --> Type 1'), nl,
+        write('Player VS AI --> Type 2'), nl,
+        write('AI VS AI --> Type 3'), nl, nl,
+        write('Select Game Mode'), nl,
+        read(UserGameMode), nl,
+        assignGameMode(UserGameMode, GameMode).
+
+askForYoungestPlayer(YoungestPlayer):-
+        write('Who is the youngest player?'), nl,
+        write('Player 1 --> 1'), nl,
+        write('Player 2 --> 2'), nl,
+        read(YoungestPlayer), nl, nl.
+
 startGame:- 
-    nl, nl,
-    write('**************************************************************************************'), nl,
-    write('********************************* SMALL STAR EMPIRES *********************************'), nl,
-    write('**************************************************************************************'), nl,
-    nl, nl,
+    displayMenu(GameMode),
+    playGameMode(GameMode).
 
-    initial_logic_board(Board),
-    playGame(Board, 2).
+playGameMode(playerVSplayer):-
+        askForYoungestPlayer(YoungestPlayer),
+        write('********************* THE BATTLE IS ON! *********************'), nl, nl,
+        initial_logic_board(Board),
+        playPlayerPlayer(Board, YoungestPlayer).
 
-playGame(Board, 1):-
+playGameMode(playerVSai):-
+        initial_logic_board(Board),
+        StartingPlayer is random(1),
+        playGame(Board, StartingPlayer).
+
+playGameMode(aiVSai):-
+        initial_logic_board(Board),
+        playGame(Board, 2).
+
+playPlayerPlayer(Board, WhoIsPlaying):-
+        WhoIsPlaying == 1,
+        write('Playing 1'), nl,
         playerTurn(Board, 1, UpdatedBoard),
         !,
-        playGame(UpdatedBoard, 2).
-playGame(Board, 2):-
+        playPlayerPlayer(UpdatedBoard, 2);
+        
+        write('Playing 2'), nl,
         playerTurn(Board, 2, UpdatedBoard),
         !,
-        playGame(UpdatedBoard, 1).
+        playPlayerPlayer(UpdatedBoard, 1).
+
+playPlayerAI(Board, WhoIsPlaying):-
+        WhoIsPlaying == 1,
+        playerTurn(Board, 1, UpdatedBoard),
+        !,
+        playPlayerAI(UpdatedBoard, ai);
+        
+        playerTurn(Board, ai, UpdatedBoard),
+        !,
+        playPlayerAI(UpdatedBoard, 1).
