@@ -151,6 +151,22 @@ isSystemColonized(X):-
 
 /** BOARD CELL FUNCTIONS **/
 
+% Auxiliar functions for adjacent cells
+
+adjacentEvenRow(X, Y, AdjX, AdjY):-
+    (AdjX =:= X, AdjY \= Y, abs(AdjY - Y) =< 2);
+    (AdjX =:= X+1, abs(AdjY - Y) =:= 1).
+
+adjacentOddRow(X, Y, AdjX, AdjY):-
+    (AdjX =:= X, AdjY \= Y, abs(AdjY - Y) =< 2);
+    (AdjX =:= X-1, abs(AdjY - Y) =:= 1).
+
+% Returns adjacent cell coordinates to cell with (X, Y) coordinates 
+adjacent(X, Y, AdjX, AdjY):-
+    (1 =:= mod(Y, 2), adjacentOddRow(X, Y, AdjX, AdjY))
+    ;
+    (0 =:= mod(Y, 2), adjacentEvenRow(X, Y, AdjX, AdjY)).
+    
 % Returns Piece on Row and Column
 getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
@@ -219,21 +235,29 @@ getShip([_,_,Ship,_], Ship).
 
 /**** CALCULATE SCORE FUNCTIONS ****/
 
+getRowPieces(Board, NumOfRow, Piece):-
+    getPiece(NumOfRow, _, Board, Piece).
+
+%% GETS ALL BOARD PIECES
+getBoardPieces(Board, Piece):-
+    getRowPieces(Board, _, Piece).
+
 starSystemScore(StarSystem, Score):-
     (isStarSystem1(StarSystem), Score is 1);
     (isStarSystem2(StarSystem), Score is 2);
     (isStarSystem3(StarSystem), Score is 3).
 
-%%score(nebula) --> depends on how many the player has
-
-getRowPieces(Board, NumOfRow, Piece):-
-    getPiece(NumOfRow, _, Board, Piece).
-
-getBoardPieces(Board, Piece):-
-    getRowPieces(Board, _, Piece).
-
 getScoreFromPiece(Piece, Score):-
     isStarSystem(Piece), starSystemScore(Piece, Score).
+
+getScoreFromAdjacentPieces(Player, Board, Piece, Score):-
+    Score is 0,
+
+    getPiece(Y, X, Board, Piece),
+    systemBelongsToPlayer(Player, Piece),
+
+
+
 
 :- dynamic total_score/1.
 
@@ -245,7 +269,7 @@ getScoreOfPlayerPiece(Player, Board, Piece, Score):-
     getScoreFromPiece(Piece, Score).
 
 getTotalScoreOfPlayer(Player, Board, TotalScore):-
-    findall(Score, getScoreOfPlayerPiece(Player, Board, Piece, Score), List),
+    findall(Score, getScoreOfPlayerPiece(Player, Board, Piece, Score), List), %% findall(<o que quero procurar>, <que condição tem que obedecer>, <onde guardar soluções>).
 
     list_sum(List, Total),
     TotalScore is Total.
