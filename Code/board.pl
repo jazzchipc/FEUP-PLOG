@@ -454,7 +454,6 @@ display_end_lines(NumOfCols, LastRow):-
     display_line_9(0, NumOfCols, LastRow).
 
 display_board(Board):-
-    % initial_logic_board(B), %% created in logic.pl
     length(Board, NumOfRows),
 
     1 is mod(NumOfRows, 2), /**** Until we can work with even rows ****/
@@ -468,7 +467,5 @@ display_board(Board):-
     display_start_lines(NumOfElementsFirstRow, FirstRow),
     display_num_linhas(NumOfRows//2 , NumOfElementsFirstRow, 0, Board),
     display_end_lines(NumOfElementsLastRow, LastRow).
-
-display:- display_board.
 
 /*** END OF DISPLAY OF BOARD HEXAGONS ***/

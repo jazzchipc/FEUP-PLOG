@@ -49,17 +49,6 @@ initial_logic_board([
     ]
     ).
 
-surround_test_board([
-    [[star2, free, [], none], [star2, free, [], none], [wormhole]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [], none]],
-    [[blackhole], [wormhole], [blackhole]],
-    [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
-    ]
-    ).
-
 /*** GET INFORMATION FROM CELLS ***/
 
 %% Get cell type
@@ -261,19 +250,6 @@ getTotalScoreOfPlayer(Player, Board, TotalScore):-
     list_sum(List, Total),
     TotalScore is Total.
 
-
-myDebug(ShipToMove, PieceToMove, DestinationPiece, NewPiece, OldPiece):-
-    write('This is the selected ship: '),
-    write(ShipToMove), nl,
-    write('This is the piece to move: '),
-    write(PieceToMove), nl,
-    write('This is the destination piece: '),
-    write(DestinationPiece), nl,
-    write('This is the new piece: '),
-    write(NewPiece), nl,
-    write('This is the old piece: '),
-    write(OldPiece), nl.
-
 /******************VALID MOVE FUNCTIONS******************/
 
 % Checks if ship to move belongs to the player who is playing
@@ -288,7 +264,7 @@ canPlayerMoveSelectedShip(2, Ship):-
     write('***** You entered a ship that is not yours to command! *****'), nl,
     fail.
 
-% Checks if the row inserted by the player exists
+% Checks if the row inserted by the player is in the board
 checkRowLimits(Board, DestinationRow):-
     length(Board, NumOfRows),
     DestinationRow > NumOfRows,
@@ -297,6 +273,7 @@ checkRowLimits(Board, DestinationRow):-
     fail.
 checkRowLimits(Board, DestinationRow).
 
+% Checks if the column inserted by the player is in the board
 checkColumnLimits([X|Xs], 0, DestinationColumn):-
     length(X, NumOfColumns),
     DestinationColumn > NumOfColumns,
@@ -308,12 +285,12 @@ checkColumnLimits([X|Xs], DestinationRow, DestinationColumn):-
     NewRow is DestinationRow - 1,
     checkColumnLimits(Xs, NewRow, DestinationColumn).
 
+% Checks if the building typed by the player is either a colony ir a trade station
 checkValidBuilding(Building):-
     (Building == trade; Building == colony);
     !,
     write('***** Invalid input, please only type t or c for the building!*****'), nl,
     fail.
-
     
 /**** VERIFY MOVE ****/
 
@@ -347,28 +324,42 @@ verifyMove(Board, Xi, Yi, Xf, Yf, InitialCell, FinalCell):-
     
     (DifX is (Xf - Xi), DifY is (Yf - Yi), AbsX is abs(DifX), AbsY is abs(DifY), AbsX=:=AbsY).
 
-% Does player turn
-playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
-    write('*************** Player '),
-    write(WhoIsPlaying),
-    write(' turn ***************'), nl, nl,
+% Checks if the landing cell is valid
+checkValidLandingCell([_, free, _, _]).
+checkValidLandingCell([wormhole]):-
+    write('You cant land in a wormhole!'), nl,
+    fail.
+checkValidLandingCell([blackhole]):-
+    write('You cant land in a blackhole!'), nl,
+    fail.
+checkValidLandingCell([_, _, _, _]):-
+    write('You cant land in an occupied cell!'), nl,
+    fail.
 
-    display_board(Board), nl, nl,
+myDebug(ShipToMove, PieceToMove, DestinationPiece, NewPiece, OldPiece):-
+    write('This is the selected ship: '),
+    write(ShipToMove), nl,
+    write('This is the piece to move: '),
+    write(PieceToMove), nl,
+    write('This is the destination piece: '),
+    write(DestinationPiece), nl,
+    write('This is the new piece: '),
+    write(NewPiece), nl,
+    write('This is the old piece: '),
+    write(OldPiece), nl.
 
+% Reads player input
+readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn):-
     !,
     repeat,
     write('Select ship'), nl,
     read(UserShipToMove), nl,
     assignShip(UserShipToMove, ShipToMove),
-    /*write('This is the selected ship: '),
-    write(ShipToMove), nl,*/
     canPlayerMoveSelectedShip(WhoIsPlaying, ShipToMove),
 
     getBoardPieces(Board, PieceToMove),
     systemHasShip(ShipToMove, PieceToMove),
     getPiece(PieceToMoveRow, PieceToMoveColumn, Board, PieceToMove),
-    /*write('This is the piece to move: '),
-    write(PieceToMove), nl,*/
 
     !,
     repeat,
@@ -382,6 +373,13 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     read(DestinationColumn), nl,
     checkColumnLimits(Board, DestinationRow, DestinationColumn),
 
+    getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
+
+    % check if the destination cell is a valid one
+    checkValidLandingCell(DestinationPiece),
+
+    % check if can go in that direction
+    
     !,
     repeat,
     format('Player ~p, what building would you like to construct?~n   t --> Trade Station~n   c --> Colony~n', [WhoIsPlaying]),
@@ -389,18 +387,20 @@ playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
     assignBuilding(UserBuilding, Building),
     checkValidBuilding(Building),
 
-    getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
-    /*write('This is the destination piece: '),
-    write(DestinationPiece), nl,*/
-
     setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, Building, NewPiece, 0),
-    /*write('This is the new piece: '),
-    write(NewPiece), nl,*/
+    removeShipFromPiece(PieceToMove, ShipToMove, OldPiece).
 
-    removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
-    /*write('This is the old piece: '),
-    write(OldPiece), nl,*/
+% Updates board
+updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard):-
+    replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, BoardChange1),
+    replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, BoardChange1, UpdatedBoard).
 
-    replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, UpdatedBoard1),
-    replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, UpdatedBoard1, FinalUpdatedBoard),    
-    clearScreen(10).
+% Does player turn
+playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
+    format('*************** Player ~d turn *************** ~n~n', [WhoIsPlaying]),
+    display_board(Board), nl, nl,
+
+    readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn),
+    updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard),
+   
+    clearScreen(50).
