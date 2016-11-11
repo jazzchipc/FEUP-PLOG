@@ -261,6 +261,7 @@ getTotalScoreOfPlayer(Player, Board, TotalScore):-
     list_sum(List, Total),
     TotalScore is Total.
 
+
 myDebug(ShipToMove, PieceToMove, DestinationPiece, NewPiece, OldPiece):-
     write('This is the selected ship: '),
     write(ShipToMove), nl,
@@ -312,6 +313,68 @@ checkValidBuilding(Building):-
     !,
     write('***** Invalid input, please only type t or c for the building!*****'), nl,
     fail.
+
+    
+/**** VERIFY MOVE ****/
+
+verifyValidDirectionOddRow(Xi, Yi, Xf, Yf):- 
+    DifY is (Yf - Yi), DifX is(Xf-Xi),
+
+    ((DifX >= 0, abs(DifX) =:= (abs(DifY//2)))
+    ;
+    (DifX =< 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
+
+verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):- 
+    DifY is (Yf - Yi), DifX is(Xf-Xi),
+
+    ((DifX =< 0, abs(DifX) =:= (abs(DifY//2)))
+    ;
+    (DifX >= 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
+
+
+/**** USE THIS FUNCTION TO VERIFY THE MOVEMENT OF A SHIP ****/
+verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
+    ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi)
+    ;
+    ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)))
+    ;
+    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf))).
+
+verifyMove(Board, Xi, Yi, Xf, Yf, InitialCell, FinalCell):-
+    getPiece(Yi, Xi, Board, InitialCell),
+    getPiece(Yf, Xf, Board, FinalCell),
+
+    
+    (DifX is (Xf - Xi), DifY is (Yf - Yi), AbsX is abs(DifX), AbsY is abs(DifY), AbsX=:=AbsY).
+
+
+/**** GET SHIP POSITION ****/
+
+% Copies only what is needed to NewPiece
+apply0([A, _, _, _], A).
+apply1([_, A, _, _], A).
+apply2([_, _, [A], _], A).
+
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 3).
+
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 2):-
+    write(Ship), nl,
+    apply2(NewPiece, Ship),
+    setPieceToMove(Xs, Ys, Ship, NewPiece, 3).
+
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 1):-
+    write(X), nl,
+    apply1(NewPiece, X),
+    setPieceToMove(Xs, Ys, Ship, NewPiece, 2).
+
+setPieceToMove([X|Xs], [Y|Ys], Ship, NewPiece, 0):-
+    write(Y), nl,
+    apply0(NewPiece, Y),
+    setPieceToMove(Xs, Ys, Ship, NewPiece, 1).
+
+
+playerTurn(WhoIsPlaying):-
+    initial_logic_board(Board),
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, FinalUpdatedBoard):-
