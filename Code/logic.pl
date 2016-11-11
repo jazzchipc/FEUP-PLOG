@@ -218,11 +218,21 @@ verifyValidDirectionOddRow(Xi, Yi, Xf, Yf):-
     ;
     (DifX =< 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
 
+verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):- 
+    DifY is (Yf - Yi), DifX is(Xf-Xi),
 
+    ((DifX =< 0, abs(DifX) =:= (abs(DifY//2)))
+    ;
+    (DifX >= 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
+
+
+/**** USE THIS FUNCTION TO VERIFY THE MOVEMENT OF A SHIP ****/
 verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
     ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi)
     ;
-    ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf))).
+    ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)))
+    ;
+    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf))).
 
 verifyMove(Board, Xi, Yi, Xf, Yf, InitialCell, FinalCell):-
     getPiece(Yi, Xi, Board, InitialCell),
