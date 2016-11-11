@@ -399,7 +399,7 @@ display_line_8_aux(NumberHexagons, LastRow):-
         translate(db, CloseHex),
         translate(s3, SpaceInsideHex2),
         write(CloseHex),
-        %display_piece_line_3(CurrentPiece),
+        display_piece_line_3(CurrentPiece),
         write(OpenHex),
         write(SpaceInsideHex2),
         display_line_8_aux(N1, RemainingPieces);
@@ -418,7 +418,7 @@ display_line_9_aux(NumberHexagons, LastRow):-
         translate(db, CloseHex),
         translate(s5, SpaceBetweenHex),
         write(CloseHex),
-        %display_piece_line_4(CurrentPiece),
+        display_piece_line_4(CurrentPiece),
         write(OpenHex),
         write(SpaceBetweenHex),
         display_line_9_aux(N1, RemainingPieces);
