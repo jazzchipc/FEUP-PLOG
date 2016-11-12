@@ -51,6 +51,10 @@ initial_logic_board([
 
 /*** GET INFORMATION FROM CELLS ***/
 
+canFlyOver(Board, X, Y):-
+    getPiece(Y, X, Board, Piece),
+    (isSystemFree(Piece); systemBelongsToPlayer(ai, Piece); isNebulaSystem(Piece)).
+
 %% Get cell type
 
 isStarSystem1([star1, _ , _, _]).
@@ -210,20 +214,23 @@ getOddCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     X > NumOfColumns - 1,
         ListX = Xs,
         ListY = Ys;
-    MovType == topLeft,
-        NewX is X - 1,
-        NewY is Y - 1,
-        getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == topRight,
-        NewY is Y - 1,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == bottomLeft,
-        NewX is X - 1,
-        NewY is Y + 1,
-        getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == bottomRight,
-        NewY is Y + 1,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
+    canFlyOver(Board, X, Y),
+        MovType == topLeft,
+            NewX is X - 1,
+            NewY is Y - 1,
+            getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        MovType == topRight,
+            NewY is Y - 1,
+            getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        MovType == bottomLeft,
+            NewX is X - 1,
+            NewY is Y + 1,
+            getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        MovType == bottomRight,
+            NewY is Y + 1,
+            getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    ListX = Xs,
+    ListY = Ys.
 
 % Auxiliar function to get all the cell to be played
 getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
@@ -238,48 +245,59 @@ getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     X > NumOfColumns - 1,
         ListX = Xs,
         ListY = Ys;
-    MovType == topLeft,
-        NewY is Y - 1,
-        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == topRight,
-        NewX is X + 1,
-        NewY is Y - 1,
-        getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == above,
-        NewY is Y - 2,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == below,
-        NewY is Y + 2,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == bottomLeft,
-        NewY is Y + 1,
-        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == bottomRight,
-        NewX is X + 1,
-        NewY is Y + 1,
-        getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
+    canFlyOver(Board, X, Y),
+        MovType == topLeft,
+            NewY is Y - 1,
+            getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        MovType == topRight,
+            NewX is X + 1,
+            NewY is Y - 1,
+            getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        MovType == above,
+            NewY is Y - 2,
+            getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        MovType == below,
+            NewY is Y + 2,
+            getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        MovType == bottomLeft,
+            NewY is Y + 1,
+            getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        MovType == bottomRight,
+            NewX is X + 1,
+            NewY is Y + 1,
+            getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    ListX = Xs,
+    ListY = Ys.
 
 % Returns all the top left cells that can be played given a specific X and Y
 getTopLeft(Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
-        getEvenCell(Board, X - 1, Y - 1, [], [], ListX, ListY, topLeft);
+        NewX is X - 1,
+        NewY is Y - 1,
+        getEvenCell(Board, NewX, NewY, [], [], ListX, ListY, topLeft);
     0 =:= mod(Y, 2),
-        getOddCell(Board, X, Y - 1, [], [], ListX, ListY, topLeft).
+        NewY is Y - 1,
+        getOddCell(Board, X, NewY, [], [], ListX, ListY, topLeft).
 
 % Returns all the top right cells that can be played given a specific X and Y
 getTopRight(Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
-        getEvenCell(Board, X, Y - 1, [], [], ListX, ListY, topRight);
+        NewY is Y - 1,
+        getEvenCell(Board, X, NewY, [], [], ListX, ListY, topRight);
     0 =:= mod(Y, 2),
-        getOddCell(Board, X + 1, Y - 1, [], [], ListX, ListY, topRight).
+        NewX is X + 1,
+        NewY is Y - 1,
+        getOddCell(Board, NewX, NewY, [], [], ListX, ListY, topRight).
 
 % Returns all the above cells that can be played given a specific X and Y
 getAbove(Board, X, Y, ListX, ListY):-
-    getEvenCell(Board, X, Y - 2, [], [], ListX, ListY, above).
+    NewY is Y - 2,
+    getEvenCell(Board, X, NewY, [], [], ListX, ListY, above).
 
 % Returns all the below cells that can be played given a specific X and Y
 getBelow(Board, X, Y, ListX, ListY):-
-    getEvenCell(Board, X, Y + 2, [], [], ListX, ListY, below).
+    NewY is Y + 2,
+    getEvenCell(Board, X, NewY, [], [], ListX, ListY, below).
 
 % Returns all the bottom left cells that can be played given a specific X and Y
 getBottomLeft(Board, X, Y, ListX, ListY):-
@@ -295,7 +313,7 @@ getBottomLeft(Board, X, Y, ListX, ListY):-
 getBottomRight(Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
         NewY is Y + 1,
-        getEvenCell(Board, X, Y + 1, [], [], ListX, ListY, bottomRight);
+        getEvenCell(Board, X, NewY, [], [], ListX, ListY, bottomRight);
     0 =:= mod(Y, 2),
         NewX is X + 1,
         NewY is Y + 1,
@@ -393,9 +411,6 @@ getShip([_,_,Ship,_], Ship).
 getRowPieces(Board, NumOfRow, Piece):-
     getPiece(NumOfRow, _, Board, Piece).
 
-getRowPiece(Board, X, Y, Piece):-
-    getPiece(Y, X, Board, Piece).
-
 %% GETS ALL BOARD PIECES
 % Regardless of coordinates
 getBoardPieces(Board, Piece):-
@@ -403,7 +418,7 @@ getBoardPieces(Board, Piece):-
 
 % With coordinates
 getBoardPiece(Board, Piece, X, Y):-
-    getRowPieces(Board, X, Y, Piece).
+    getPiece(Y, X, Board, Piece).
 
 %% Get score from star system cells
 starSystemScore(StarSystem, Score):-
@@ -431,7 +446,7 @@ getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score):-
     systemBelongsToPlayer(Player, Piece),
     (getScoreFromStarSystemPiece(Piece, Score)) .
 
-%% Get score from adjacent cells
+%% Get score from adjacent cells belonging to player
 getCoordsOfTradeStationsAdjacents(Player, Board, ListOfCoords):-
     getBoardPiece(Board, Piece, X, Y),
     systemBelongsToPlayer(Player, Piece),
@@ -447,6 +462,22 @@ getScoreFromAdjacentsToTradeStations(Player, Board, ScoreFromAdjacents):-
     findall(ListOfCoords, getCoordsOfTradeStationsAdjacents(Player, Board, ListOfCoords), ListOfAdjacents),
 
     length(ListOfAdjacents, ScoreFromAdjacents).
+
+%% [AI] Get possible score of case because of adjacent cells
+
+getCoordsOfEnemyCellAdjacents(Player, Board, X, Y, ListOfCoords):-
+
+    getAdjacent(X, Y, Xadj, Yadj),
+    getBoardPiece(Board, AdjPiece, Xadj, Yadj),
+    isSystemOwned(AdjPiece),
+    (\+(systemBelongsToPlayer(Player, AdjPiece))),
+    ListOfCoords = [Xadj, Yadj].
+
+getScoreFromAdjacentsToCell(Player, Board, X, Y, ScoreFromAdjacents):-
+    findall(ListOfCoords, getCoordsOfEnemyCellAdjacents(Player, Board, X, Y, ListOfCoords), ListOfAdjacents),
+
+    length(ListOfAdjacents, ScoreFromAdjacents).
+
 
 %% Get player total score
 
@@ -582,10 +613,10 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 
 /**** VERIFY END OF THE GAME ****/
 
-gameEnd(Board):-
+endGame(Board):-
 
     %% While any ship can be moved    
-    \+((ship(Ship),
+    \+(((ship(Ship) ; shipDamaged(Ship)),
     getBoardPieces(Board, PieceWithShip),
     systemHasShip(Ship, PieceWithShip),
     getPiece(Y, X, Board, PieceWithShip),
@@ -693,17 +724,35 @@ getBestCellToMoveTo(Board):-
     length(Board, NumOfRows),
     restrictValidCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
 
-calculateBestMove(Board):-
-    getBestCellToMoveTo(Board).
+searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY, MaxPossibleScore):-
+    getScoreFromAdjacentsToCell(player2, Board, X, Y, AdjacentScore),
+
+    getPiece(Y, X, Board, Piece),
+    getScoreFromStarSystemPiece(Piece, CellScore),
+    TotalScore = AdjacentScore + CellScore,
+    TotalScore > MaxScore,
+        MaxScore = TotalScore,
+        CellToPlayX = X,
+        CellToPlayY = Y,
+        searchMaxScore(Xs, Ys, MaxScore, CellToPlayX, CellToPlayY);
+    searchMaxScore(Xs, Ys, MaxScore, CellToPlayX, CellToPlayY).
+
+
+
+calculateBestMove(Board, ListX, ListY):-
+    %getBestCellToMoveTo(Board).
+    searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY, MaxPossibleScore).
+
 
 % Does AI turn
 playerTurn(Board, ai, UpdatedBoard):-
     %write('*************** AI turn ***************'), nl, nl,
     %display_board(Board), nl, nl,
+    %moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
 
-    getAllPossibleCellsToMove(Board, 2, 6, ListX, ListY),
-    write('Total:'), nl,
+    getAllPossibleCellsToMove(Board, 1, 3, ListX, ListY),
     writeXY(ListX, ListY),
+    %calculateBestMove(Board, ListX, ListY),
 
     %calculateBestMove(ListX, ListY),
     UpdatedBoard = Board.
