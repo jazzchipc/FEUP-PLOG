@@ -353,19 +353,31 @@ canPlayerMoveSelectedShip(2, Ship):-
 % Checks if the row inserted by the player is in the board
 checkRowLimits(Board, DestinationRow):-
     length(Board, NumOfRows),
-    DestinationRow > NumOfRows,
+
+    (DestinationRow > NumOfRows,
     !,
     format('***** The board only has ~d rows, cant go to row ~d*****~n', [NumOfRows, DestinationRow]),
-    fail.
+    fail)
+    ;
+    (DestinationRow < 0,
+    !,
+    write('***** There are no negative coordinates. ******'), nl, 
+    fail).
 checkRowLimits(Board, DestinationRow).
 
 % Checks if the column inserted by the player is in the board
 checkColumnLimits([X|Xs], 0, DestinationColumn):-
     length(X, NumOfColumns),
-    DestinationColumn > NumOfColumns,
+    
+    (DestinationColumn > NumOfColumns,
     !,
     format('***** The board only has ~d columns, cant go to column ~d*****~n', [NumOfColumns, DestinationColumn]),
-    fail.
+    fail)
+    ;
+    (DestinationColumn < 0,
+    !,
+    write('***** There are no negative coordinates. ******'), nl, 
+    fail).
 checkColumnLimits([X|Xs], 0, DestinationColumn).
 checkColumnLimits([X|Xs], DestinationRow, DestinationColumn):-
     NewRow is DestinationRow - 1,
