@@ -216,8 +216,11 @@ getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
         ListX = Xs,
         ListY = Ys;
     length(Board, NumOfRows),
+    Y > NumOfRows - 1,
+        ListX = Xs,
+        ListY = Ys;
     getColumnLength(Board, Y, NumOfColumns),
-    (X > NumOfColumns; Y > NumOfRows),
+    X > NumOfColumns - 1,
         ListX = Xs,
         ListY = Ys;
     MovType == minus,
@@ -250,7 +253,7 @@ getTopRight(Board, X, Y, ListX, ListY):-
 getAbove(Board, X, Y, ListX, ListY):-
     getEvenCell(Board, X, Y - 2, [], [], ListX, ListY, minus2).
 
-getBelow(Board, X, Y, ListX, ListY):-
+getBelow(Board, NumOfRows, X, Y, [], [], ListX, ListY):-
     getEvenCell(Board, X, Y + 2, [], [], ListX, ListY, plus2).
 
 getAllPossibleCellsToMove(Board, X, Y, ListX, ListX):-    
@@ -584,15 +587,21 @@ playerTurn(Board, ai, UpdatedBoard):-
     %display_board(Board), nl, nl,
 
     %getAllPossibleCellsToMove(Board, 1, 3, ListX, ListY),
+
     getTopLeft(Board, 1, 3, TopLeftX, TopLeftY),
     getTopRight(Board, 1, 3, TopRightX, TopRightY),
     getAbove(Board, 1, 3, AboveX, AboveY),
+    getBelow(Board, 1, 3, BelowX, BelowY),
+
     append(TopLeftX, TopRightX, X1),
     append(X1, AboveX, X2),
+    append(X2, BelowX, X3),
+
     append(TopLeftY, TopRightY, Y1),
     append(Y1, AboveY, Y2),
-    /*getBelow(Board, 1, 3, BelowX, BelowY),*/
-    writeXY(X2, Y2),
+    append(Y2, BelowY, Y3),
+
+    writeXY(X3, Y3),
 
     %calculateBestMove(Board),
     UpdatedBoard = Board.
