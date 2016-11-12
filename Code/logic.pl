@@ -423,7 +423,8 @@ checkValidLandingCell([wormhole]):-
 checkValidLandingCell([blackhole]):-
     write('You cant land in a blackhole!'), nl,
     fail.
-checkValidLandingCell([_, _, _, _]):-
+checkValidLandingCell(Cell):-
+    isSystemOwned(Cell),
     write('You cant land in an occupied cell!'), nl,
     fail.
 
@@ -454,12 +455,11 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
 
     !,
     repeat,
+    
     write('Select row to travel to'), nl,
     read(DestinationRow), nl,
     checkRowLimits(Board, DestinationRow),
 
-    !,
-    repeat,
     write('Select column to travel to'), nl,
     read(DestinationColumn), nl,
     checkColumnLimits(Board, DestinationRow, DestinationColumn),
@@ -467,15 +467,12 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
 
     % check if the destination cell is a valid one
-    !,
-    repeat,
     checkValidLandingCell(DestinationPiece),
 
-    % check if can go in that direction
-    !,
-    repeat,
-    verifyValidGeometricDirection(PieceToMoveColumn, PieceToMoveRow, DestinationColumn, DestinationRow),
-    
+    (verifyValidGeometricDirection(PieceToMoveColumn, PieceToMoveRow, DestinationColumn, DestinationRow)
+    ;
+    (write('The given cell is not in a possible direction'), nl, fail)),
+
     !,
     repeat,
     format('Player ~p, what building would you like to construct?~n   t --> Trade Station~n   c --> Colony~n', [WhoIsPlaying]),
