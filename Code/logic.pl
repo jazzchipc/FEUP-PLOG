@@ -39,13 +39,13 @@ none - none
 /* Element example: [<type of system>, <owner>, <list of ships>, <constructions>] */
 
 initial_logic_board([
-    [[star2, free, [], none], [star2, free, [], none], [wormhole]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
+    [[star2, player2, [], colony], [star2, free, [], none], [wormhole]],
+    [[star1, player1, [], trade], [star2, player2, [], colony], [star2, free, [], none]],
     [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
+    [[star3, free, [], none], [nebula, player2, [], trade], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
-    [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
+    [[star3, free, [], none], [nebula, player2, [], none], [star1, free, [], none]],
+    [[star1, free, [], none], [star2, player2, [], none], [star2, free, [], none]]
     ]
     ).
 
@@ -146,7 +146,7 @@ hasSystemTradeStation([_, _, _, trade]).
 
 isSystemColonized(X):-
     hasSystemColony(X);
-    hasSystemTrade(X).
+    hasSystemTradeStation(X).
 
 
 /** BOARD CELL FUNCTIONS **/
@@ -255,9 +255,17 @@ getShip([_,_,Ship,_], Ship).
 getRowPieces(Board, NumOfRow, Piece):-
     getPiece(NumOfRow, _, Board, Piece).
 
+getRowPiece(Board, X, Y, Piece):-
+    getPiece(Y, X, Board, Piece).
+
 %% GETS ALL BOARD PIECES
+% Regardless of coordinates
 getBoardPieces(Board, Piece):-
     getRowPieces(Board, _, Piece).
+
+% With coordinates
+getBoardPiece(Board, Piece, X, Y):-
+    getRowPieces(Board, X, Y, Piece).
 
 %% Get score from star system cells
 starSystemScore(StarSystem, Score):-
@@ -269,33 +277,59 @@ getScoreFromStarSystemPiece(Piece, Score):-
     isStarSystem(Piece), starSystemScore(Piece, Score).
 
 %% Get score from nebula system cells
-getNumOfOwnedNebulas(Player, Board, NumOfNebulas).
+getPlayerNebulaScore(Player, NumOfOwnedNebulas, NebulaScore):-
+    (NumOfOwnedNebulas =:= 0, NebulaScore is 0);
+    (NumOfOwnedNebulas =:= 1, NebulaScore is 2);
+    (NumOfOwnedNebulas =:= 2, NebulaScore is 5);
+    (NumOfOwnedNebulas =:= 3, NebulaScore is 8).
+
+getNumOfOwnedNebulas(Player, Board, NumOfOwnedNebulas):-
+    findall(Piece, (getBoardPieces(Board, Piece), systemBelongsToPlayer(Player, Piece), isNebulaSystem(Piece)), ListOfNebulasOwned),
+    length(ListOfNebulasOwned, NumOfOwnedNebulas).
 
 
-getScoreFromAdjacentPieces(Player, Board, Piece, Score):-
-    Score is 0,
-
-    getPiece(Y, X, Board, Piece),
-    systemBelongsToPlayer(Player, Piece).
-
-
-
-getScoreOfPlayerPiece(Player, Board, Piece, Score):-
+getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score):-
     getBoardPieces(Board, Piece),
     systemBelongsToPlayer(Player, Piece),
-    %star systems
-    (getScoreFromStarSystemPiece(Piece, Score))
-    
-    %nebula systems
-    .
+    (getScoreFromStarSystemPiece(Piece, Score)) .
+
+%% Get score from adjacent cells
+getCoordsOfTradeStationsAdjacents(Player, Board, ListOfCoords):-
+    getBoardPiece(Board, Piece, X, Y),
+    systemBelongsToPlayer(Player, Piece),
+    hasSystemTradeStation(Piece),
+
+    getAdjacent(X, Y, Xadj, Yadj),
+    getBoardPiece(Board, AdjPiece, Xadj, Yadj),
+    isSystemOwned(AdjPiece),
+    (\+(systemBelongsToPlayer(Player, AdjPiece))),
+    ListOfCoords = [Xadj, Yadj].
+
+getScoreFromAdjacentsToTradeStations(Player, Board, ScoreFromAdjacents):-
+    findall(ListOfCoords, getCoordsOfTradeStationsAdjacents(Player, Board, ListOfCoords), ListOfAdjacents),
+
+    length(ListOfAdjacents, ScoreFromAdjacents).
 
 %% Get player total score
 
 getTotalScoreOfPlayer(Player, Board, TotalScore):-
-    findall(Score, getScoreOfPlayerPiece(Player, Board, Piece, Score), List), %% findall(<o que quero procurar>, <que condição tem que obedecer>, <onde guardar soluções>).
+    %star systems
+    %% findall(<o que quero procurar>, <que condição tem que obedecer>, <onde guardar soluções>).
+    findall(Score, getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score), StarSystemList), 
 
-    list_sum(List, Total),
-    TotalScore is Total.
+    ((length(StarSystemList, 0), TotalStarSystemsScore is 0)
+    ;
+    list_sum(StarSystemList, TotalStarSystemsScore)),
+    
+    %nebulas systems
+    getNumOfOwnedNebulas(Player, Board, NumOfOwnedNebulas),
+    getPlayerNebulaScore(Player, NumOfOwnedNebulas, NebulaScore),
+    
+    %adjacent systems
+    getScoreFromAdjacentsToTradeStations(Player, Board, ScoreFromAdjacents),
+
+    %total 
+    TotalScore is (TotalStarSystemsScore+NebulaScore+ScoreFromAdjacents).
 
 /******************VALID MOVE FUNCTIONS******************/
 
