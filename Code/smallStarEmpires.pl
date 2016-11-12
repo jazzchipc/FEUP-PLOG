@@ -27,7 +27,7 @@ askForYoungestPlayer(YoungestPlayer):-
 
 startGame:- 
     displayMenu(GameMode),
-    playGameMode(GameMode).
+    playGameMode(playerVSai).
 
 playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),
