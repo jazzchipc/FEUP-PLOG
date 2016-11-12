@@ -39,10 +39,10 @@ none - none
 /* Element example: [<type of system>, <owner>, <list of ships>, <constructions>] */
 
 initial_logic_board([
-    [[star2, free, [], none], [star2, free, [], none], [wormhole]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
+    [[star2, player2, [], colony], [star2, free, [], none], [wormhole]],
+    [[star1, player1, [shipAdamaged], none], [star2, free, [], none], [star2, free, [], none]],
+    [[home, player1, [], none], [star2, free, [], none], [emptyS, free, [], none]],
+    [[star3, player2, [], trade], [nebula, free, [], none], [home, player2, [shipWdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
@@ -598,14 +598,36 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 endGame(Board):-
 
     %% While any ship can be moved    
-    \+(((ship(Ship) ; shipDamaged(Ship)),
+    \+(
+    % verify player 1 ships
+    ((player1Ship(Ship),
+    (ship(Ship) ; shipDamaged(Ship)),
     getBoardPieces(Board, PieceWithShip),
     systemHasShip(Ship, PieceWithShip),
     getPiece(Y, X, Board, PieceWithShip),
 
+    write(X), write(Y), nl,
+
     moveNCellsInDirection(X, Y, Direction, 1, Xf, Yf),
+    write(Xf), write(Yf), write(Direction), nl,
     getPiece(Yf, Xf, Board, AdjPiece),
-    checkValidLandingCell(AdjPiece))).
+    checkValidLandingCell(AdjPiece)),
+
+    % verify player 2 ships
+    (player2Ship(Ship),
+    (ship(Ship) ; shipDamaged(Ship)),
+    getBoardPieces(Board, PieceWithShip),
+    systemHasShip(Ship, PieceWithShip),
+    getPiece(Y, X, Board, PieceWithShip),
+
+    write(X), write(Y), nl,
+
+    moveNCellsInDirection(X, Y, Direction, 1, Xf, Yf),
+    write(Xf), write(Yf), write(Direction), nl,
+    getPiece(Yf, Xf, Board, AdjPiece),
+    checkValidLandingCell(AdjPiece)))
+    
+    ).
 
 
 
