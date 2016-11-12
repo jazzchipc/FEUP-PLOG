@@ -464,7 +464,9 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     read(DestinationColumn), nl,
     checkColumnLimits(Board, DestinationRow, DestinationColumn),
 
-    getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
+    (getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece)
+    ;
+    (write('There is no cell in those coordinates.'), nl, fail)),
 
     % check if the destination cell is a valid one
     checkValidLandingCell(DestinationPiece),
@@ -489,8 +491,7 @@ updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveC
     replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, BoardChange1, UpdatedBoard).
 
 
-
-
+% Verify game ending
 
 % Returns only the valid adjacent cells. The X list is D, and the Y list is C
 getValidAdjacentCells(_, _, [], [], A, B, A, B).
