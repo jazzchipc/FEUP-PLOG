@@ -432,14 +432,15 @@ moveNCellsInDirection(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
     NumberOfCells \= 0,
     
     %north
-    (north(Direction), Yf is (Yi - (NumberOfCells*2)), Xf is Xi, verifyValidGeometricDirection(Xi, Yi, Xf, Yf))
+    ((north(Direction), Yf is (Yi - (NumberOfCells*2)), Xf is Xi, verifyValidGeometricDirection(Xi, Yi, Xf, Yf))
     ;
     %south
     (south(Direction), Yf is (Yi + (NumberOfCells*2)), Xf is Xi, verifyValidGeometricDirection(Xi, Yi, Xf, Yf))
     ;
     %other Directions
-    ((1 =:= mod(Yi, 2), moveNCellsInDirectionOddRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)));
-    ((0 =:= mod(Yi, 2), moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)));
+    ((1 =:= mod(Yi, 2), moveNCellsInDirectionOddRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)))
+    ;
+    ((0 =:= mod(Yi, 2), moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf))));
 
     !,
     fail.
