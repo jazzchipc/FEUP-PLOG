@@ -41,8 +41,8 @@ none - none
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
+    [[home, player1, [], none], [star2, free, [], none], [emptyS, free, [shipB], none]],
+    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
@@ -453,6 +453,22 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
     ((DifX =< 0, abs(DifX) =:= (abs(DifY//2)))
     ;
     (DifX >= 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
+
+
+/**** VERIFY END OF THE GAME ****/
+
+gameEnd(Board):-
+
+    %% While any ship can be moved    
+    \+((ship(Ship),
+    getBoardPieces(Board, PieceWithShip),
+    systemHasShip(Ship, PieceWithShip),
+    getPiece(Y, X, Board, PieceWithShip),
+
+    moveNCellsInDirection(X, Y, Direction, 1, Xf, Yf),
+    getPiece(Yf, Xf, Board, AdjPiece),
+    checkValidLandingCell(AdjPiece))).
+
 
 
 /**** USE THIS FUNCTION TO VERIFY THE MOVEMENT OF A SHIP ****/
