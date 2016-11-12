@@ -33,10 +33,14 @@ playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),
         write('********************* THE BATTLE IS ON! *********************'), nl, nl,
         initial_logic_board(Board),
-        playPlayerPlayer(Board, YoungestPlayer),
+        \+(playPlayerPlayer(Board, YoungestPlayer)),
         !,
-        getTotalScoreOfPlayer(Player, Board, TotalScore),
-        format('Player ~p has a score of ~d points.~n', [Player, TotalScore]).
+        getTotalScoreOfPlayer(player1, Board, TotalScore1),
+        format('Player 1 has a score of ~d points.~n', [TotalScore1]),
+        
+        getTotalScoreOfPlayer(player2, Board, TotalScore2),
+        format('Player 2 has a score of ~d points.~n', [TotalScore2])
+        .
 
 playGameMode(playerVSai):-
         initial_logic_board(Board),
@@ -50,14 +54,14 @@ playGameMode(aiVSai):-
 playPlayerPlayer(Board, WhoIsPlaying):-
         (\+ endGame(Board)),
 
-        WhoIsPlaying == 1,
+        (WhoIsPlaying == 1,
         playerTurn(Board, 1, UpdatedBoard),
         !,
         playPlayerPlayer(UpdatedBoard, 2);
         
         playerTurn(Board, 2, UpdatedBoard),
         !,
-        playPlayerPlayer(UpdatedBoard, 1).
+        playPlayerPlayer(UpdatedBoard, 1)).
 
 playPlayerAI(Board, WhoIsPlaying):-
         (\+ endGame(Board)),
