@@ -39,13 +39,13 @@ none - none
 /* Element example: [<type of system>, <owner>, <list of ships>, <constructions>] */
 
 initial_logic_board([
-    [[star2, player2, [], colony], [star2, free, [], none], [wormhole]],
-    [[star1, player1, [], trade], [star2, player2, [], colony], [star2, free, [], none]],
+    [[star2, free, [], none], [star2, free, [], none], [wormhole]],
+    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
     [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, player2, [], trade], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
+    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
-    [[star3, free, [], none], [nebula, player2, [], none], [star1, free, [], none]],
-    [[star1, free, [], none], [star2, player2, [], none], [star2, free, [], none]]
+    [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
+    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
     ]
     ).
 
