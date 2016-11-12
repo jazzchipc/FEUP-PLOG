@@ -44,7 +44,7 @@ initial_logic_board([
     [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
     [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
-    [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
+    [[star3, free, [], none], [nebula, player2, [], none], [star1, free, [], none]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
     ]
     ).
@@ -269,30 +269,28 @@ getScoreFromStarSystemPiece(Piece, Score):-
     isStarSystem(Piece), starSystemScore(Piece, Score).
 
 %% Get score from nebula system cells
-getNumOfOwnedNebulas(Player, Board, NumOfNebulas).
+getPlayerNebulaScore(Player, NumOfOwnedNebulas, NebulaScore):-
+    (NumOfOwnedNebulas =:= 0, NebulaScore is 0);
+    (NumOfOwnedNebulas =:= 1, NebulaScore is 2);
+    (NumOfOwnedNebulas =:= 2, NebulaScore is 5);
+    (NumOfOwnedNebulas =:= 3, NebulaScore is 8).
+
+getNumOfOwnedNebulas(Player, Board, NumOfOwnedNebulas):-
+    findall(Piece, (getBoardPieces(Board, Piece), systemBelongsToPlayer(Player, Piece), isNebulaSystem(Piece)), ListOfNebulasOwned),
+    length(ListOfNebulasOwned, NumOfOwnedNebulas).
 
 
-getScoreFromAdjacentPieces(Player, Board, Piece, Score):-
-    Score is 0,
 
-    getPiece(Y, X, Board, Piece),
-    systemBelongsToPlayer(Player, Piece).
-
-
-
-getScoreOfPlayerPiece(Player, Board, Piece, Score):-
+getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score):-
     getBoardPieces(Board, Piece),
     systemBelongsToPlayer(Player, Piece),
     %star systems
-    (getScoreFromStarSystemPiece(Piece, Score))
-    
-    %nebula systems
-    .
+    (getScoreFromStarSystemPiece(Piece, Score)) .
 
 %% Get player total score
 
 getTotalScoreOfPlayer(Player, Board, TotalScore):-
-    findall(Score, getScoreOfPlayerPiece(Player, Board, Piece, Score), List), %% findall(<o que quero procurar>, <que condição tem que obedecer>, <onde guardar soluções>).
+    findall(Score, getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score), List), %% findall(<o que quero procurar>, <que condição tem que obedecer>, <onde guardar soluções>).
 
     list_sum(List, Total),
     TotalScore is Total.

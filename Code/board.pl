@@ -90,59 +90,6 @@ getLine(X, [X|_], 0).
 getLine(X, [_|L], LineToSend):-
     getLine(X, L, K1), LineToSend is K1 + 1.
 
-
-/*** WRITE FUNCTIONS (for debugging) ***/
-
-/* Write whole element */
-write_element_coord([B1|Bs], X, Y):-
-    Y == 0 -> write_element(B1, X);
-    Y > 0 -> Y1 is Y-1, write_element_coord(Bs, X, Y1).
-
-write_element([R1|Rs], X):-
-    X == 0 -> display_board_case(R1);
-    X > 0 -> X1 is X-1, write_element(Rs, X1).
-
-/* Write element type */
-write_type_coord([B1|Bs], X, Y):-
-    Y == 0 -> write_element_type(B1, X);
-    Y > 0 -> Y1 is Y-1, write_type_coord(Bs, X, Y1).
-
-write_element_type([R1|Rs], X):-
-    X == 0 -> display_type(R1);
-    X > 0 -> X1 is X-1, write_element_type(Rs, X1).
-
-/* Write element owner */
-
-write_owner_coord([B1|Bs], X, Y):-
-    Y == 0 -> write_element_owner(B1, X);
-    Y > 0 -> Y1 is Y-1, write_owner_coord(Bs, X, Y1).
-
-write_element_owner([R1|Rs], X):-
-    X == 0 -> display_owner(R1);
-    X > 0 -> X1 is X-1, write_element_owner(Rs, X1).
-
-/* Write element ships*/
-
-write_ships_coord([B1|Bs], X, Y):-
-    Y == 0 -> write_element_ships(B1, X);
-    Y > 0 -> Y1 is Y-1, write_ships_coord(Bs, X, Y1).
-
-write_element_ships([R1|Rs], X):-
-    X == 0 -> display_ships(R1);
-    X > 0 -> X1 is X-1, write_element_ships(Rs, X1).
-
-/* Write element building */
-
-write_building_coord([B1|Bs], X, Y):-
-    Y == 0 -> write_element_building(B1, X);
-    Y > 0 -> Y1 is Y-1, write_building_coord(Bs, X, Y1).
-
-write_element_building([R1|Rs], X):-
-    X == 0 -> display_building(R1);
-    X > 0 -> X1 is X-1, write_element_building(Rs, X1).
-
-/*** END OF WRITE FUNCTIONS ***/
-
 /*** BEGIN OF DISPLAY OF BOARD PIECES ***/
 
 %% Systems and nebula displays
