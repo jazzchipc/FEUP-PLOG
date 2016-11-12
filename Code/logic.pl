@@ -199,17 +199,28 @@ getOddCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
         ListX = Xs,
         ListY = Ys;
     length(Board, NumOfRows),
-    getColumnLength(Board, Y, NumOfColumns),
-    (X > NumOfColumns; Y > NumOfRows),
+    Y > NumOfRows - 1,
         ListX = Xs,
         ListY = Ys;
-    MovType == minus,
+    getColumnLength(Board, Y, NumOfColumns),
+    X > NumOfColumns - 1,
+        ListX = Xs,
+        ListY = Ys;
+    MovType == topLeft,
         NewX is X - 1,
         NewY is Y - 1,
         getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == plus,
+    MovType == topRight,
         NewY is Y - 1,
+        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == bottomLeft,
+        NewX is X - 1,
+        NewY is Y + 1,
+        getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == bottomRight,
+        NewY is Y + 1,
         getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
+
 
 getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     (X < 0; Y < 0),
@@ -223,38 +234,65 @@ getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     X > NumOfColumns - 1,
         ListX = Xs,
         ListY = Ys;
-    MovType == minus,
+    MovType == topLeft,
         NewY is Y - 1,
         getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == plus,
+    MovType == topRight,
         NewX is X + 1,
         NewY is Y - 1,
         getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == minus2,
+    MovType == above,
         NewY is Y - 2,
         getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    MovType == plus2,
+    MovType == below,
         NewY is Y + 2,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
+        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == bottomLeft,
+        NewY is Y + 1,
+        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == bottomRight,
+        NewX is X + 1,
+        NewY is Y + 1,
+        getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
 
 
 getTopLeft(Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
-        getEvenCell(Board, X - 1, Y - 1, [], [], ListX, ListY, minus);
+        getEvenCell(Board, X - 1, Y - 1, [], [], ListX, ListY, topLeft);
     0 =:= mod(Y, 2),
-        getOddCell(Board, X, Y - 1, [], [], ListX, ListY, minus).
+        getOddCell(Board, X, Y - 1, [], [], ListX, ListY, topLeft).
 
 getTopRight(Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
-        getEvenCell(Board, X, Y - 1, [], [], ListX, ListY, plus);
+        getEvenCell(Board, X, Y - 1, [], [], ListX, ListY, topRight);
     0 =:= mod(Y, 2),
-        getOddCell(Board, X + 1, Y - 1, [], [], ListX, ListY, plus).
+        getOddCell(Board, X + 1, Y - 1, [], [], ListX, ListY, topRight).
 
 getAbove(Board, X, Y, ListX, ListY):-
-    getEvenCell(Board, X, Y - 2, [], [], ListX, ListY, minus2).
+    getEvenCell(Board, X, Y - 2, [], [], ListX, ListY, above).
 
-getBelow(Board, NumOfRows, X, Y, [], [], ListX, ListY):-
-    getEvenCell(Board, X, Y + 2, [], [], ListX, ListY, plus2).
+getBelow(Board, X, Y, ListX, ListY):-
+    getEvenCell(Board, X, Y + 2, [], [], ListX, ListY, below).
+
+getBottomLeft(Board, X, Y, ListX, ListY):-
+    1 =:= mod(Y, 2),
+        NewX is X - 1,
+        NewY is Y + 1,
+        getEvenCell(Board, NewX, NewY, [], [], ListX, ListY, bottomLeft);
+    0 =:= mod(Y, 2),
+        NewY is Y + 1,
+        getOddCell(Board, X, NewY, [], [], ListX, ListY, bottomLeft).
+
+getBottomRight(Board, X, Y, ListX, ListY):-
+    1 =:= mod(Y, 2),
+        NewY is Y + 1,
+        getEvenCell(Board, X, Y + 1, [], [], ListX, ListY, bottomRight);
+    0 =:= mod(Y, 2),
+        NewX is X + 1,
+        NewY is Y + 1,
+        getOddCell(Board, NewX, NewY, [], [], ListX, ListY, bottomRight).
+        
+
 
 getAllPossibleCellsToMove(Board, X, Y, ListX, ListX):-    
     getTopLeft(Board, X, Y, B, C),
@@ -592,16 +630,22 @@ playerTurn(Board, ai, UpdatedBoard):-
     getTopRight(Board, 1, 3, TopRightX, TopRightY),
     getAbove(Board, 1, 3, AboveX, AboveY),
     getBelow(Board, 1, 3, BelowX, BelowY),
+    getBottomLeft(Board, 1, 3, BottomLeftX, BottomLeftY),
+    getBottomRight(Board, 1, 3, BottomRightX, BottomRightY),
 
     append(TopLeftX, TopRightX, X1),
     append(X1, AboveX, X2),
     append(X2, BelowX, X3),
+    append(X3, BottomLeftX, X4),
+    append(X4, BottomRightX, X5),
 
     append(TopLeftY, TopRightY, Y1),
     append(Y1, AboveY, Y2),
     append(Y2, BelowY, Y3),
+    append(Y3, BottomLeftY, Y4),
+    append(Y4, BottomRightY, Y5),
 
-    writeXY(X3, Y3),
+    writeXY(X5, Y5),
 
     %calculateBestMove(Board),
     UpdatedBoard = Board.
