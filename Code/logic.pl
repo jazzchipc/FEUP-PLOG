@@ -410,9 +410,7 @@ moveNCellsInDirectionOddRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
     ;
     (southeast(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi + (NumberOfCells // 2)))),
 
-    verifyValidGeometricDirection(Xi, Yi, Xf, Yf);
-    !,
-    fail.
+    verifyValidGeometricDirection(Xi, Yi, Xf, Yf).
 
 moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
 
@@ -424,9 +422,7 @@ moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
     ;
     (southeast(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi + ((NumberOfCells + 1) // 2)))),
 
-    verifyValidGeometricDirection(Xi, Yi, Xf, Yf);
-    !,
-    fail.
+    verifyValidGeometricDirection(Xi, Yi, Xf, Yf).
 
 moveNCellsInDirection(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
     NumberOfCells \= 0,
@@ -440,10 +436,7 @@ moveNCellsInDirection(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
     %other Directions
     ((1 =:= mod(Yi, 2), moveNCellsInDirectionOddRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)))
     ;
-    ((0 =:= mod(Yi, 2), moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf))));
-
-    !,
-    fail.
+    ((0 =:= mod(Yi, 2), moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)))).
     
 /**** VERIFY MOVE ****/
 
@@ -464,11 +457,11 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 
 /**** USE THIS FUNCTION TO VERIFY THE MOVEMENT OF A SHIP ****/
 verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
-    ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
+    (((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
     ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)));
-    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf)));
-    !,
-    fail.
+    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf))))
+    ;
+    (write('The given cell is not in a possible direction'), nl, fail).
 
 % Checks if the landing cell is valid
 checkValidLandingCell([_, free, _, _]).
@@ -511,13 +504,13 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     !,
     repeat,
     
-    write('Select row to travel to'), nl,
-    read(DestinationRow), nl,
-    checkRowLimits(Board, DestinationRow),
+    write('Select direction to travel'), nl,
+    read(Direction), nl,
 
-    write('Select column to travel to'), nl,
-    read(DestinationColumn), nl,
-    checkColumnLimits(Board, DestinationRow, DestinationColumn),
+    write('Select number of cells to travel'), nl,
+    read(NumOfCells), nl,
+    
+    moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
 
     (getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece)
     ;
@@ -525,10 +518,6 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
 
     % check if the destination cell is a valid one
     checkValidLandingCell(DestinationPiece),
-
-    (verifyValidGeometricDirection(PieceToMoveColumn, PieceToMoveRow, DestinationColumn, DestinationRow)
-    ;
-    (write('The given cell is not in a possible direction'), nl, fail)),
 
     !,
     repeat,
