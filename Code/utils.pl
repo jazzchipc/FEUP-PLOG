@@ -42,6 +42,13 @@ writeList([X|Xs], N):-
     N1 is N + 1,
     writeList(Xs, N1).
 
+writeXY([], []):-
+    write('End of lists'),
+    nl, nl.
+writeXY([X|Xs], [Y|Ys]):-
+    format('X = ~d, Y = ~d~n', [X, Y]),
+    writeXY(Xs, Ys).
+
 % Gets the length of the selected row
 getColumnLength([X|Xs], 0, Length):-
     length(X, Length).
