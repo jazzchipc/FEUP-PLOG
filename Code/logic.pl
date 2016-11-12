@@ -393,9 +393,6 @@ getShip([_,_,Ship,_], Ship).
 getRowPieces(Board, NumOfRow, Piece):-
     getPiece(NumOfRow, _, Board, Piece).
 
-getRowPiece(Board, X, Y, Piece):-
-    getPiece(Y, X, Board, Piece).
-
 %% GETS ALL BOARD PIECES
 % Regardless of coordinates
 getBoardPieces(Board, Piece):-
@@ -403,7 +400,7 @@ getBoardPieces(Board, Piece):-
 
 % With coordinates
 getBoardPiece(Board, Piece, X, Y):-
-    getRowPieces(Board, X, Y, Piece).
+    getPiece(Y, X, Board, Piece).
 
 %% Get score from star system cells
 starSystemScore(StarSystem, Score):-
@@ -431,7 +428,7 @@ getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score):-
     systemBelongsToPlayer(Player, Piece),
     (getScoreFromStarSystemPiece(Piece, Score)) .
 
-%% Get score from adjacent cells
+%% Get score from adjacent cells belonging to player
 getCoordsOfTradeStationsAdjacents(Player, Board, ListOfCoords):-
     getBoardPiece(Board, Piece, X, Y),
     systemBelongsToPlayer(Player, Piece),
@@ -447,6 +444,22 @@ getScoreFromAdjacentsToTradeStations(Player, Board, ScoreFromAdjacents):-
     findall(ListOfCoords, getCoordsOfTradeStationsAdjacents(Player, Board, ListOfCoords), ListOfAdjacents),
 
     length(ListOfAdjacents, ScoreFromAdjacents).
+
+%% [AI] Get possible score of case because of adjacent cells
+
+getCoordsOfEnemyCellAdjacents(Player, Board, X, Y, ListOfCoords):-
+
+    getAdjacent(X, Y, Xadj, Yadj),
+    getBoardPiece(Board, AdjPiece, Xadj, Yadj),
+    isSystemOwned(AdjPiece),
+    (\+(systemBelongsToPlayer(Player, AdjPiece))),
+    ListOfCoords = [Xadj, Yadj].
+
+getScoreFromAdjacentsToCell(Player, Board, X, Y, ScoreFromAdjacents):-
+    findall(ListOfCoords, getCoordsOfEnemyCellAdjacents(Player, Board, X, Y, ListOfCoords), ListOfAdjacents),
+
+    length(ListOfAdjacents, ScoreFromAdjacents).
+
 
 %% Get player total score
 
@@ -582,10 +595,10 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 
 /**** VERIFY END OF THE GAME ****/
 
-gameEnd(Board):-
+endGame(Board):-
 
     %% While any ship can be moved    
-    \+((ship(Ship),
+    \+(((ship(Ship) ; shipDamaged(Ship)),
     getBoardPieces(Board, PieceWithShip),
     systemHasShip(Ship, PieceWithShip),
     getPiece(Y, X, Board, PieceWithShip),
