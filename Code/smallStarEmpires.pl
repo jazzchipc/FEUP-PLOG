@@ -37,8 +37,8 @@ playGameMode(playerVSplayer):-
 
 playGameMode(playerVSai):-
         initial_logic_board(Board),
-        StartingPlayer is random(1),
-        playGame(Board, StartingPlayer).
+        %StartingPlayer is random(1),
+        playPlayerAI(Board, ai).
 
 playGameMode(aiVSai):-
         initial_logic_board(Board),
@@ -46,12 +46,10 @@ playGameMode(aiVSai):-
 
 playPlayerPlayer(Board, WhoIsPlaying):-
         WhoIsPlaying == 1,
-        write('Playing 1'), nl,
         playerTurn(Board, 1, UpdatedBoard),
         !,
         playPlayerPlayer(UpdatedBoard, 2);
         
-        write('Playing 2'), nl,
         playerTurn(Board, 2, UpdatedBoard),
         !,
         playPlayerPlayer(UpdatedBoard, 1).

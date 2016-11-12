@@ -183,7 +183,12 @@ adjacent(X, Y, AdjX, AdjY):-
     (1 =:= mod(Y, 2), adjacentOddRow(X, Y, AdjX, AdjY))
     ;
     (0 =:= mod(Y, 2), adjacentEvenRow(X, Y, AdjX, AdjY)).
-    
+
+% Returns all adjacent cells to cell(Column, Row) and saves them in List
+getAdjacentList(X, Y, ListX, ListY):-
+    findall((AdjX), getAdjacent(X, Y, AdjX, AdjY), ListX),
+    findall((AdjY), getAdjacent(X, Y, AdjX, AdjY), ListY).
+
 % Returns Piece on Row and Column
 getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
@@ -474,8 +479,39 @@ updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveC
     replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, BoardChange1),
     replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, BoardChange1, UpdatedBoard).
 
+
+
+
+
+% Returns only the valid adjacent cells. The X list is D, and the Y list is C
+getValidAdjacentCells(_, _, [], [], A, B, A, B).
+getValidAdjacentCells(Board, NumOfRows, [Y|Ys], [X|Xs], A, B, C, D):-
+    X >= 0,
+    Y >= 0,
+    getColumnLength(Board, X, NumOfColumns),
+    X < NumOfColumns,
+    Y < NumOfRows,
+    getValidAdjacentCells(Board, NumOfRows, Ys, Xs, [Y|A], [X|B], C, D);
+    getValidAdjacentCells(Board, NumOfRows, Ys, Xs, A, B, C, D).
+
+
+getBestCellToMoveTo(Board):-
+    getAdjacentList(2, 0, AdjacentListX, AdjacentListY),
+
+    length(Board, NumOfRows),
+    getValidAdjacentCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
+
+calculateBestMove(Board):-
+    getBestCellToMoveTo(Board).
+
 % Does AI turn
-playerTurn(Board, ai, UpdatedBoard).
+playerTurn(Board, ai, UpdatedBoard):-
+    write('*************** AI turn ***************'), nl, nl,
+    display_board(Board), nl, nl,
+
+    calculateBestMove(Board),
+    UpdatedBoard = Board,
+    clearScreen(60).
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, UpdatedBoard):-

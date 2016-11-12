@@ -33,4 +33,20 @@ list_sum([Item], Item).
 list_sum([Item1,Item2 | Tail], Total) :-
     list_sum([Item1+Item2|Tail], Total).
 
+% Writes the whole list
+writeList([]):-
+    write('Vazio'),
+    nl.
+writeList([X|Xs], N):-
+    format('Element num ~d: ~d~n', [N, X]),
+    N1 is N + 1,
+    writeList(Xs, N1).
+
+% Gets the length of the selected row
+getColumnLength([X|Xs], 0, Length):-
+    length(X, Length).
+getColumnLength([X|Xs], Row, Length):-
+    NewRow is Row - 1,
+    getColumnLength(Xs, NewRow, Length).
+
 /*** END OF LIST UTILS ***/
