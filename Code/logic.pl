@@ -55,6 +55,17 @@ canFlyOver(Board, X, Y):-
     getPiece(Y, X, Board, Piece),
     (isSystemFree(Piece); systemBelongsToPlayer(ai, Piece); isNebulaSystem(Piece)).
 
+takeWormholesOut(_, [], [], TempX, TempY, ListX, ListY):-
+    ListX = TempX,
+    ListY = TempY.
+takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
+    getPiece(Y, X, Board, Piece),
+    isWormhole(Piece),
+    takeWormholesOut(Board, Xs, Ys, TempX, TempY, ListX, ListY).
+takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
+    takeWormholesOut(Board, Xs, Ys, [X|TempX], [Y|TempY], ListX, ListY).
+
+
 %% Get cell type
 
 isStarSystem1([star1, _ , _, _]).
@@ -332,13 +343,15 @@ getAllPossibleCellsToMove(Board, X, Y, ListX, ListY):-
     append(X1, AboveX, X2),
     append(X2, BelowX, X3),
     append(X3, BottomLeftX, X4),
-    append(X4, BottomRightX, ListX),
+    append(X4, BottomRightX, X5),
 
     append(TopLeftY, TopRightY, Y1),
     append(Y1, AboveY, Y2),
     append(Y2, BelowY, Y3),
     append(Y3, BottomLeftY, Y4),
-    append(Y4, BottomRightY, ListY).
+    append(Y4, BottomRightY, Y5),
+
+    takeWormholesOut(Board, X5, Y5, [], [], ListX, ListY).
 
 % Returns Piece on Row and Column
 getPiece(Row, Column, Board, Piece):-
@@ -750,7 +763,7 @@ playerTurn(Board, ai, UpdatedBoard):-
     %display_board(Board), nl, nl,
     %moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
 
-    getAllPossibleCellsToMove(Board, 1, 3, ListX, ListY),
+    getAllPossibleCellsToMove(Board, 1, 5, ListX, ListY),
     writeXY(ListX, ListY),
     %calculateBestMove(Board, ListX, ListY),
 
