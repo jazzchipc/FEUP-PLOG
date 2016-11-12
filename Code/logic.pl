@@ -41,8 +41,8 @@ none - none
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [], none], [star2, free, [], none], [emptyS, free, [shipB], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [], none]],
+    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
+    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
