@@ -302,13 +302,13 @@ getBottomRight(Board, X, Y, ListX, ListY):-
         getOddCell(Board, NewX, NewY, [], [], ListX, ListY, bottomRight).
 
 % Returns the X on the ListX and the Y on the ListY of all the cells that can be playeed given a specific X and Y
-getAllPossibleCellsToMove(Board, X, Y, ListX, ListX):-
-    getTopLeft(Board, 1, 3, TopLeftX, TopLeftY),
-    getTopRight(Board, 1, 3, TopRightX, TopRightY),
-    getAbove(Board, 1, 3, AboveX, AboveY),
-    getBelow(Board, 1, 3, BelowX, BelowY),
-    getBottomLeft(Board, 1, 3, BottomLeftX, BottomLeftY),
-    getBottomRight(Board, 1, 3, BottomRightX, BottomRightY),
+getAllPossibleCellsToMove(Board, X, Y, ListX, ListY):-
+    getTopLeft(Board, X, Y, TopLeftX, TopLeftY),
+    getTopRight(Board, X, Y, TopRightX, TopRightY),
+    getAbove(Board, X, Y, AboveX, AboveY),
+    getBelow(Board, X, Y, BelowX, BelowY),
+    getBottomLeft(Board, X, Y, BottomLeftX, BottomLeftY),
+    getBottomRight(Board, X, Y, BottomRightX, BottomRightY),
 
     append(TopLeftX, TopRightX, X1),
     append(X1, AboveX, X2),
@@ -701,10 +701,11 @@ playerTurn(Board, ai, UpdatedBoard):-
     %write('*************** AI turn ***************'), nl, nl,
     %display_board(Board), nl, nl,
 
-    getAllPossibleCellsToMove(Board, 1, 3, ListX, ListY),
+    getAllPossibleCellsToMove(Board, 2, 6, ListX, ListY),
+    write('Total:'), nl,
     writeXY(ListX, ListY),
 
-    %calculateBestMove(Board),
+    %calculateBestMove(ListX, ListY),
     UpdatedBoard = Board.
     %clearScreen(60).
 
