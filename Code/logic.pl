@@ -148,6 +148,14 @@ isSystemColonized(X):-
     hasSystemColony(X);
     hasSystemTradeStation(X).
 
+%% Directions of movement
+
+north(n).
+south(s).
+northwest(nw).
+southwest(sw).
+northeast(ne).
+southeast(se).
 
 /** BOARD CELL FUNCTIONS **/
 
@@ -353,19 +361,31 @@ canPlayerMoveSelectedShip(2, Ship):-
 % Checks if the row inserted by the player is in the board
 checkRowLimits(Board, DestinationRow):-
     length(Board, NumOfRows),
-    DestinationRow > NumOfRows,
+
+    (DestinationRow > NumOfRows,
     !,
     format('***** The board only has ~d rows, cant go to row ~d*****~n', [NumOfRows, DestinationRow]),
-    fail.
+    fail)
+    ;
+    (DestinationRow < 0,
+    !,
+    write('***** There are no negative coordinates. ******'), nl, 
+    fail).
 checkRowLimits(Board, DestinationRow).
 
 % Checks if the column inserted by the player is in the board
 checkColumnLimits([X|Xs], 0, DestinationColumn):-
     length(X, NumOfColumns),
-    DestinationColumn > NumOfColumns,
+    
+    (DestinationColumn > NumOfColumns,
     !,
     format('***** The board only has ~d columns, cant go to column ~d*****~n', [NumOfColumns, DestinationColumn]),
-    fail.
+    fail)
+    ;
+    (DestinationColumn < 0,
+    !,
+    write('***** There are no negative coordinates. ******'), nl, 
+    fail).
 checkColumnLimits([X|Xs], 0, DestinationColumn).
 checkColumnLimits([X|Xs], DestinationRow, DestinationColumn):-
     NewRow is DestinationRow - 1,
@@ -377,6 +397,46 @@ checkValidBuilding(Building):-
     !,
     write('***** Invalid input, please only type t or c for the building!*****'), nl,
     fail.
+
+/**** MOVE WITH DIRECTIONS ****/
+
+moveNCellsInDirectionOddRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+
+    ((northwest(Direction), Yf is(Yi - NumberOfCells), Xf is(Xi - ((NumberOfCells + 1) // 2)))
+    ;
+    (southwest(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi - ((NumberOfCells + 1) // 2)))
+    ;
+    (northeast(Direction), Yf is(Yi - NumberOfCells), Xf is(Xi + (NumberOfCells // 2)))
+    ;
+    (southeast(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi + (NumberOfCells // 2)))),
+
+    verifyValidGeometricDirection(Xi, Yi, Xf, Yf).
+
+moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+
+    ((northwest(Direction), Yf is(Yi - NumberOfCells), Xf is(Xi - (NumberOfCells // 2)))
+    ;
+    (southwest(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi - (NumberOfCells // 2)))
+    ;
+    (northeast(Direction), Yf is(Yi - NumberOfCells), Xf is(Xi + ((NumberOfCells + 1) // 2)))
+    ;
+    (southeast(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi + ((NumberOfCells + 1) // 2)))),
+
+    verifyValidGeometricDirection(Xi, Yi, Xf, Yf).
+
+moveNCellsInDirection(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+    NumberOfCells \= 0,
+    
+    %north
+    ((north(Direction), Yf is (Yi - (NumberOfCells*2)), Xf is Xi, verifyValidGeometricDirection(Xi, Yi, Xf, Yf))
+    ;
+    %south
+    (south(Direction), Yf is (Yi + (NumberOfCells*2)), Xf is Xi, verifyValidGeometricDirection(Xi, Yi, Xf, Yf))
+    ;
+    %other Directions
+    ((1 =:= mod(Yi, 2), moveNCellsInDirectionOddRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)))
+    ;
+    ((0 =:= mod(Yi, 2), moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)))).
     
 /**** VERIFY MOVE ****/
 
@@ -395,13 +455,29 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
     (DifX >= 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
 
 
+/**** VERIFY END OF THE GAME ****/
+
+gameEnd(Board):-
+
+    %% While any ship can be moved    
+    \+((ship(Ship),
+    getBoardPieces(Board, PieceWithShip),
+    systemHasShip(Ship, PieceWithShip),
+    getPiece(Y, X, Board, PieceWithShip),
+
+    moveNCellsInDirection(X, Y, Direction, 1, Xf, Yf),
+    getPiece(Yf, Xf, Board, AdjPiece),
+    checkValidLandingCell(AdjPiece))).
+
+
+
 /**** USE THIS FUNCTION TO VERIFY THE MOVEMENT OF A SHIP ****/
 verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
-    ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
+    (((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
     ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)));
-    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf)));
-    !,
-    fail.
+    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf))))
+    ;
+    (write('The given cell is not in a possible direction'), nl, fail).
 
 % Checks if the landing cell is valid
 checkValidLandingCell([_, free, _, _]).
@@ -411,7 +487,8 @@ checkValidLandingCell([wormhole]):-
 checkValidLandingCell([blackhole]):-
     write('You cant land in a blackhole!'), nl,
     fail.
-checkValidLandingCell([_, _, _, _]):-
+checkValidLandingCell(Cell):-
+    isSystemOwned(Cell),
     write('You cant land in an occupied cell!'), nl,
     fail.
 
@@ -442,28 +519,22 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
 
     !,
     repeat,
-    write('Select row to travel to'), nl,
-    read(DestinationRow), nl,
-    checkRowLimits(Board, DestinationRow),
+    
+    write('Select direction to travel'), nl,
+    read(Direction), nl,
 
-    !,
-    repeat,
-    write('Select column to travel to'), nl,
-    read(DestinationColumn), nl,
-    checkColumnLimits(Board, DestinationRow, DestinationColumn),
+    write('Select number of cells to travel'), nl,
+    read(NumOfCells), nl,
+    
+    moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
 
-    getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece),
+    (getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece)
+    ;
+    (write('There is no cell in those coordinates.'), nl, fail)),
 
     % check if the destination cell is a valid one
-    !,
-    repeat,
     checkValidLandingCell(DestinationPiece),
 
-    % check if can go in that direction
-    !,
-    repeat,
-    verifyValidGeometricDirection(PieceToMoveColumn, PieceToMoveRow, DestinationColumn, DestinationRow),
-    
     !,
     repeat,
     format('Player ~p, what building would you like to construct?~n   t --> Trade Station~n   c --> Colony~n', [WhoIsPlaying]),
@@ -478,9 +549,6 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
 updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard):-
     replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, BoardChange1),
     replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, BoardChange1, UpdatedBoard).
-
-
-
 
 
 % Returns only the valid adjacent cells. The X list is D, and the Y list is C
