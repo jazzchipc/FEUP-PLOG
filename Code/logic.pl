@@ -151,7 +151,7 @@ isSystemColonized(X):-
 
 /** BOARD CELL FUNCTIONS **/
 
-% Auxiliar functions for adjacent cells
+% Auxiliar functions for getting adjacent cells
 
 getAdjacentEvenRow(Xin, Yin, Xout, Yout):-
     (Xout is Xin, (Yout is Yin -2; Yout is Yin -1; Yout is Yin +1; Yout is Yin +2))
@@ -168,6 +168,7 @@ getAdjacent(Xin, Yin, Xout, Yout):-
     ;
     (0 =:= mod(Yin, 2), getAdjacentEvenRow(Xin, Yin, Xout, Yout)).
 
+% Auxiliar functions for verifying adjacent cells
 
 adjacentEvenRow(X, Y, AdjX, AdjY):-
     (AdjX =:= X, AdjY \= Y, abs(AdjY - Y) =< 2);
@@ -258,31 +259,37 @@ getRowPieces(Board, NumOfRow, Piece):-
 getBoardPieces(Board, Piece):-
     getRowPieces(Board, _, Piece).
 
+%% Get score from star system cells
 starSystemScore(StarSystem, Score):-
     (isStarSystem1(StarSystem), Score is 1);
     (isStarSystem2(StarSystem), Score is 2);
     (isStarSystem3(StarSystem), Score is 3).
 
-getScoreFromPiece(Piece, Score):-
+getScoreFromStarSystemPiece(Piece, Score):-
     isStarSystem(Piece), starSystemScore(Piece, Score).
+
+%% Get score from nebula system cells
+getNumOfOwnedNebulas(Player, Board, NumOfNebulas).
+
 
 getScoreFromAdjacentPieces(Player, Board, Piece, Score):-
     Score is 0,
 
     getPiece(Y, X, Board, Piece),
-    systemBelongsToPlayer(Player, Piece),
+    systemBelongsToPlayer(Player, Piece).
 
 
-
-
-:- dynamic total_score/1.
-
-total_score(0).
 
 getScoreOfPlayerPiece(Player, Board, Piece, Score):-
     getBoardPieces(Board, Piece),
     systemBelongsToPlayer(Player, Piece),
-    getScoreFromPiece(Piece, Score).
+    %star systems
+    (getScoreFromStarSystemPiece(Piece, Score))
+    
+    %nebula systems
+    .
+
+%% Get player total score
 
 getTotalScoreOfPlayer(Player, Board, TotalScore):-
     findall(Score, getScoreOfPlayerPiece(Player, Board, Piece, Score), List), %% findall(<o que quero procurar>, <que condição tem que obedecer>, <onde guardar soluções>).
