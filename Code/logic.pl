@@ -42,10 +42,10 @@ initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
     [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
+    [[star3, free, [], none], [nebula, player2, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, player2, [], none], [star1, free, [], none]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
+    [[star1, free, [], none], [star2, player2, [], none], [star2, free, [], none]]
     ]
     ).
 
@@ -280,20 +280,26 @@ getNumOfOwnedNebulas(Player, Board, NumOfOwnedNebulas):-
     length(ListOfNebulasOwned, NumOfOwnedNebulas).
 
 
-
 getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score):-
     getBoardPieces(Board, Piece),
     systemBelongsToPlayer(Player, Piece),
-    %star systems
     (getScoreFromStarSystemPiece(Piece, Score)) .
 
 %% Get player total score
 
 getTotalScoreOfPlayer(Player, Board, TotalScore):-
-    findall(Score, getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score), List), %% findall(<o que quero procurar>, <que condição tem que obedecer>, <onde guardar soluções>).
+    %star systems
+    %% findall(<o que quero procurar>, <que condição tem que obedecer>, <onde guardar soluções>).
+    findall(Score, getScoreOfPlayerStarSystemPiece(Player, Board, Piece, Score), StarSystemList), 
 
-    list_sum(List, Total),
-    TotalScore is Total.
+    ((length(StarSystemList, 0), TotalStarSystemsScore is 0)
+    ;
+    list_sum(StarSystemList, TotalStarSystemsScore)),
+    
+    %nebulas systems
+    getNumOfOwnedNebulas(Player, Board, NumOfOwnedNebulas),
+    getPlayerNebulaScore(Player, NumOfOwnedNebulas, NebulaScore),
+    TotalScore is (TotalStarSystemsScore+NebulaScore).
 
 /******************VALID MOVE FUNCTIONS******************/
 
