@@ -189,6 +189,54 @@ getAdjacentList(X, Y, ListX, ListY):-
     findall((AdjX), getAdjacent(X, Y, AdjX, AdjY), ListX),
     findall((AdjY), getAdjacent(X, Y, AdjX, AdjY), ListY).
 
+
+
+
+
+
+getOddCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
+    (X < 0; Y < 0),
+        ListX = Xs,
+        ListY = Ys;
+    NewX is X - 1,
+    NewY is Y - 1,
+    getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
+
+getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
+    (X < 0; Y < 0),
+        ListX = Xs,
+        ListY = Ys;
+    MovType == minus,
+        NewY is Y - 1,
+        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType =:= plus,
+        NewY is Y + 1,
+        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
+
+
+getTopLeft(Board, X, Y, ListX, ListY):-
+    1 =:= mod(Y, 2),
+        getEvenCell(Board, X - 1, Y - 1, [], [], ListX, ListY, minus);
+    0 =:= mod(Y, 2),
+        getOddCell(Board, X, Y - 1, [], [], ListX, ListY, minus).
+
+getTopRight(Board, X, Y, ListX, ListY).
+   /* 1 =:= mod(Y, 2),
+        getEvenCell(Board, X, Y - 1, [], [], ListX, ListY)
+    0 =:= mod(Y, 2),*/
+
+getAllPossibleCellsToMove(Board, X, Y, ListX, ListY):-
+    %length(Board, NumOfRows),
+    
+    getTopLeft(Board, X, Y, ListX, ListY).
+    %getTopRight(Board, X, Y, ListX, ListY).
+
+
+
+
+
+
+
 % Returns Piece on Row and Column
 getPiece(Row, Column, Board, Piece):-
     nth0(Row, Board, MyRow),
@@ -484,32 +532,36 @@ updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveC
 
 
 % Returns only the valid adjacent cells. The X list is D, and the Y list is C
-getValidAdjacentCells(_, _, [], [], A, B, A, B).
-getValidAdjacentCells(Board, NumOfRows, [Y|Ys], [X|Xs], A, B, C, D):-
+restrictValidCells(_, _, [], [], A, B, A, B).
+restrictValidCells(Board, NumOfRows, [Y|Ys], [X|Xs], A, B, C, D):-
     X >= 0,
     Y >= 0,
     getColumnLength(Board, X, NumOfColumns),
     X < NumOfColumns,
     Y < NumOfRows,
-    getValidAdjacentCells(Board, NumOfRows, Ys, Xs, [Y|A], [X|B], C, D);
-    getValidAdjacentCells(Board, NumOfRows, Ys, Xs, A, B, C, D).
+    restrictValidCells(Board, NumOfRows, Ys, Xs, [Y|A], [X|B], C, D);
+    restrictValidCells(Board, NumOfRows, Ys, Xs, A, B, C, D).
 
 
 getBestCellToMoveTo(Board):-
     getAdjacentList(2, 0, AdjacentListX, AdjacentListY),
 
     length(Board, NumOfRows),
-    getValidAdjacentCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
+    restrictValidCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
 
 calculateBestMove(Board):-
     getBestCellToMoveTo(Board).
 
 % Does AI turn
 playerTurn(Board, ai, UpdatedBoard):-
-    write('*************** AI turn ***************'), nl, nl,
-    display_board(Board), nl, nl,
+    %write('*************** AI turn ***************'), nl, nl,
+    %display_board(Board), nl, nl,
 
-    calculateBestMove(Board),
+    getAllPossibleCellsToMove(Board, 2, 3, ListX, ListY),
+    writeList(ListX, 0),
+    writeList(ListY, 0),
+
+    %calculateBestMove(Board),
     UpdatedBoard = Board,
     clearScreen(60).
 
