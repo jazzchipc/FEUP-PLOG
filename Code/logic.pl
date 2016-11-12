@@ -148,6 +148,14 @@ isSystemColonized(X):-
     hasSystemColony(X);
     hasSystemTradeStation(X).
 
+%% Directions of movement
+
+north(n).
+south(s).
+northwest(nw).
+southwest(sw).
+northeast(ne).
+southeast(se).
 
 /** BOARD CELL FUNCTIONS **/
 
@@ -389,6 +397,52 @@ checkValidBuilding(Building):-
     !,
     write('***** Invalid input, please only type t or c for the building!*****'), nl,
     fail.
+
+/**** MOVE WITH DIRECTIONS ****/
+
+moveNCellsInDirectionOddRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+
+    ((northwest(Direction), Yf is(Yi - NumberOfCells), Xf is(Xi - ((NumberOfCells + 1) // 2)))
+    ;
+    (southwest(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi - ((NumberOfCells + 1) // 2)))
+    ;
+    (northeast(Direction), Yf is(Yi - NumberOfCells), Xf is(Xi + (NumberOfCells // 2)))
+    ;
+    (southeast(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi + (NumberOfCells // 2)))),
+
+    verifyValidGeometricDirection(Xi, Yi, Xf, Yf);
+    !,
+    fail.
+
+moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+
+    ((northwest(Direction), Yf is(Yi - NumberOfCells), Xf is(Xi - (NumberOfCells // 2)))
+    ;
+    (southwest(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi - (NumberOfCells // 2)))
+    ;
+    (northeast(Direction), Yf is(Yi - NumberOfCells), Xf is(Xi + ((NumberOfCells + 1) // 2)))
+    ;
+    (southeast(Direction), Yf is(Yi + NumberOfCells), Xf is(Xi + ((NumberOfCells + 1) // 2)))),
+
+    verifyValidGeometricDirection(Xi, Yi, Xf, Yf);
+    !,
+    fail.
+
+moveNCellsInDirection(Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+    NumberOfCells \= 0,
+    
+    %north
+    (north(Direction), Yf is (Yi - (NumberOfCells*2)), Xf is Xi, verifyValidGeometricDirection(Xi, Yi, Xf, Yf))
+    ;
+    %south
+    (south(Direction), Yf is (Yi + (NumberOfCells*2)), Xf is Xi, verifyValidGeometricDirection(Xi, Yi, Xf, Yf))
+    ;
+    %other Directions
+    ((1 =:= mod(Yi, 2), moveNCellsInDirectionOddRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)));
+    ((0 =:= mod(Yi, 2), moveNCellsInDirectionEvenRow(Xi, Yi, Direction, NumberOfCells, Xf, Yf)));
+
+    !,
+    fail.
     
 /**** VERIFY MOVE ****/
 
@@ -490,8 +544,6 @@ updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveC
     replace(PieceToMove, OldPiece, PieceToMoveRow, PieceToMoveColumn, Board, BoardChange1),
     replace(DestinationPiece, NewPiece, DestinationRow, DestinationColumn, BoardChange1, UpdatedBoard).
 
-
-% Verify game ending
 
 % Returns only the valid adjacent cells. The X list is D, and the Y list is C
 getValidAdjacentCells(_, _, [], [], A, B, A, B).
