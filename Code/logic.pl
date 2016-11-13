@@ -1,5 +1,6 @@
 :- use_module(library(lists)).
 :- use_module(library(aggregate)).
+:- use_module(library(random)).
 :- include('board.pl').
 :- include('utils.pl').
 
@@ -737,13 +738,10 @@ getBestCellToMoveTo(Board):-
     length(Board, NumOfRows),
     restrictValidCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
 
-searchMaxScore(_, [], [], _, CellToPlayX, CellToPlayY):-
-    write(CellToPlayX), nl,
-    write(CellToPlayY), nl,
-    write(MaxPossibleScore), nl.
+% Returns the X and Y of the cell that gives more score to the AI
+searchMaxScore(_, [], [], _, CellToPlayX, CellToPlayY).
 searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY):-
     getScoreFromAdjacentsToCell(player2, Board, X, Y, AdjacentScore),
-
     getPiece(Y, X, Board, Piece),
     getScoreFromStarSystemPiece(Piece, CellScore),
     TotalScore is AdjacentScore + CellScore,
@@ -751,17 +749,62 @@ searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY)
         searchMaxScore(Board, Xs, Ys, TotalScore, X, Y);
     searchMaxScore(Board, Xs, Ys, CurrentMaxScore, CellToPlayX, CellToPlayY).
 
+getPiecesWithShipsBelongingToAI([], TempPieces, ListMoveablePieces):-
+    ListMoveablePieces = TempPieces.
+getPiecesWithShipsBelongingToAI([A, B, Ships, C|Xs], TempPieces, ListMoveablePieces):-
+    (member(shipWdamaged, Ships); member(shipXdamaged, Ships); member(shipYdamaged, Ships); member(shipZdamaged, Ships)),
+    write('Exists'), nl,
+    getPiecesWithShipsBelongingToAI(Xs, [A, B, Ships, C|TempPieces], ListMoveablePieces).
+getPiecesWithShipsBelongingToAI([_, _, Ships, _|Xs], TempPieces, ListMoveablePieces):-
+    getPiecesWithShipsBelongingToAI(Xs, TempPieces, ListMoveablePieces).
+getPiecesWithShipsBelongingToAI([_|Xs], TempPieces, ListMoveablePieces):-
+    getPiecesWithShipsBelongingToAI(Xs, TempPieces, ListMoveablePieces).
+
+getAIShips(Board, X, Y):-
+    player2Ship(Ship),
+    getBoardPieces(Board, PieceWithShip),
+    systemHasShip(Ship, PieceWithShip),
+    getPiece(Y, X, Board, PieceWithShip).
+
+chooseShipToMove(0, [X|Xs], [Y|Ys], X, Y):-
+    write('Acabando'), nl.
+chooseShipToMove(PieceDecider, [X|Xs], [Y|Ys], OriginCellX, OriginCellY):-
+    write('AIAIAIA'), nl,
+    NewPieceDecider is PieceDecider - 1,
+    chooseShipToMove(NewPieceDecider, Xs, Ys, OriginCellX, OriginCellY).
+
 % Does AI turn
 playerTurn(Board, ai, UpdatedBoard):-
-    %write('*************** AI turn ***************'), nl, nl,
-    %moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
+    write('*************** AI turn ***************'), nl, nl,
 
-    getAllPossibleCellsToMove(Board, 1, 5, ListX, ListY),
+    write('Ola 1'), nl,
+
+    getAIShips(Board, PiecesWithShipPositionX, PiecesWithShipPositionY),
+    write('Ola 2'), nl,
+
+    /*random(0, 4, PieceDecider),
+    write('Este e o num = '),
+    write(PieceDecider), nl,*/
+    chooseShipToMove(1, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
+
+    write('Ola 3'), nl,
+
+    
+    write(OriginCellX), nl,
+    write(OriginCellY), nl,
+
+    getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
     searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY),
 
+    getPiece(OriginCellY, OriginCellX, Board, PieceToMove),
+    getPiece(CellToPlayY, CellToPlayX, Board, DestinationPiece),
 
+    setPieceToMove(PieceToMove, DestinationPiece, shipWdamaged, colony, NewPiece, 0),
+    removeShipFromPiece(PieceToMove, shipWdamaged, OldPiece),
 
-    UpdatedBoard = Board.
+    updateBoard(Board, OldPiece, NewPiece, PieceToMove, OriginCellY, OriginCellX, DestinationPiece, CellToPlayY, CellToPlayX, UpdatedBoard),
+    write('*************** AI turn End ***************'), nl, nl.
+
     %clearScreen(60).
 
 % Does player turn

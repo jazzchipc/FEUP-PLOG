@@ -38,7 +38,9 @@ writeList([], _):-
     write('End of list'),
     nl, nl.
 writeList([X|Xs], N):-
-    format('Element num ~d: ~d~n', [N, X]),
+    write('Element num '), write(N), write(': '),
+    write(X), nl,
+    %format('Element num ~d: ~d~n', [N, X]),
     N1 is N + 1,
     writeList(Xs, N1).
 
