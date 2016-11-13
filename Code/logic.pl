@@ -1,5 +1,6 @@
 :- use_module(library(lists)).
 :- use_module(library(aggregate)).
+:- use_module(library(random)).
 :- include('board.pl').
 :- include('utils.pl').
 
@@ -51,8 +52,22 @@ initial_logic_board([
     ]
     ).
 
-
 /*** GET INFORMATION FROM CELLS ***/
+
+canFlyOver(Board, X, Y):-
+    getPiece(Y, X, Board, Piece),
+    isBlackhole(Piece).
+
+takeWormholesOut(_, [], [], TempX, TempY, ListX, ListY):-
+    ListX = TempX,
+    ListY = TempY.
+takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
+    getPiece(Y, X, Board, Piece),
+    (isWormhole(Piece); isSystemOwned(Piece)),
+    takeWormholesOut(Board, Xs, Ys, TempX, TempY, ListX, ListY).
+takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
+    takeWormholesOut(Board, Xs, Ys, [X|TempX], [Y|TempY], ListX, ListY).
+
 
 %% Get cell type
 
@@ -213,6 +228,9 @@ getOddCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     X > NumOfColumns - 1,
         ListX = Xs,
         ListY = Ys;
+    canFlyOver(Board, X, Y),
+        ListX = Xs,
+        ListY = Ys;
     MovType == topLeft,
         NewX is X - 1,
         NewY is Y - 1,
@@ -241,6 +259,9 @@ getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     X > NumOfColumns - 1,
         ListX = Xs,
         ListY = Ys;
+    canFlyOver(Board, X, Y),
+        ListX = Xs,
+        ListY = Ys;
     MovType == topLeft,
         NewY is Y - 1,
         getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
@@ -265,24 +286,32 @@ getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
 % Returns all the top left cells that can be played given a specific X and Y
 getTopLeft(Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
-        getEvenCell(Board, X - 1, Y - 1, [], [], ListX, ListY, topLeft);
+        NewX is X - 1,
+        NewY is Y - 1,
+        getEvenCell(Board, NewX, NewY, [], [], ListX, ListY, topLeft);
     0 =:= mod(Y, 2),
-        getOddCell(Board, X, Y - 1, [], [], ListX, ListY, topLeft).
+        NewY is Y - 1,
+        getOddCell(Board, X, NewY, [], [], ListX, ListY, topLeft).
 
 % Returns all the top right cells that can be played given a specific X and Y
 getTopRight(Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
-        getEvenCell(Board, X, Y - 1, [], [], ListX, ListY, topRight);
+        NewY is Y - 1,
+        getEvenCell(Board, X, NewY, [], [], ListX, ListY, topRight);
     0 =:= mod(Y, 2),
-        getOddCell(Board, X + 1, Y - 1, [], [], ListX, ListY, topRight).
+        NewX is X + 1,
+        NewY is Y - 1,
+        getOddCell(Board, NewX, NewY, [], [], ListX, ListY, topRight).
 
 % Returns all the above cells that can be played given a specific X and Y
 getAbove(Board, X, Y, ListX, ListY):-
-    getEvenCell(Board, X, Y - 2, [], [], ListX, ListY, above).
+    NewY is Y - 2,
+    getEvenCell(Board, X, NewY, [], [], ListX, ListY, above).
 
 % Returns all the below cells that can be played given a specific X and Y
 getBelow(Board, X, Y, ListX, ListY):-
-    getEvenCell(Board, X, Y + 2, [], [], ListX, ListY, below).
+    NewY is Y + 2,
+    getEvenCell(Board, X, NewY, [], [], ListX, ListY, below).
 
 % Returns all the bottom left cells that can be played given a specific X and Y
 getBottomLeft(Board, X, Y, ListX, ListY):-
@@ -298,32 +327,36 @@ getBottomLeft(Board, X, Y, ListX, ListY):-
 getBottomRight(Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
         NewY is Y + 1,
-        getEvenCell(Board, X, Y + 1, [], [], ListX, ListY, bottomRight);
+        getEvenCell(Board, X, NewY, [], [], ListX, ListY, bottomRight);
     0 =:= mod(Y, 2),
         NewX is X + 1,
         NewY is Y + 1,
         getOddCell(Board, NewX, NewY, [], [], ListX, ListY, bottomRight).
 
 % Returns the X on the ListX and the Y on the ListY of all the cells that can be playeed given a specific X and Y
-getAllPossibleCellsToMove(Board, X, Y, ListX, ListX):-
-    getTopLeft(Board, 1, 3, TopLeftX, TopLeftY),
-    getTopRight(Board, 1, 3, TopRightX, TopRightY),
-    getAbove(Board, 1, 3, AboveX, AboveY),
-    getBelow(Board, 1, 3, BelowX, BelowY),
-    getBottomLeft(Board, 1, 3, BottomLeftX, BottomLeftY),
-    getBottomRight(Board, 1, 3, BottomRightX, BottomRightY),
+getAllPossibleCellsToMove(Board, X, Y, ListX, ListY):-
+    getTopLeft(Board, X, Y, TopLeftX, TopLeftY),
+    getTopRight(Board, X, Y, TopRightX, TopRightY),
+    getAbove(Board, X, Y, AboveX, AboveY),
+    getBelow(Board, X, Y, BelowX, BelowY),
+    getBottomLeft(Board, X, Y, BottomLeftX, BottomLeftY),
+    getBottomRight(Board, X, Y, BottomRightX, BottomRightY),
 
     append(TopLeftX, TopRightX, X1),
     append(X1, AboveX, X2),
     append(X2, BelowX, X3),
     append(X3, BottomLeftX, X4),
-    append(X4, BottomRightX, ListX),
+    append(X4, BottomRightX, X5),
 
     append(TopLeftY, TopRightY, Y1),
     append(Y1, AboveY, Y2),
     append(Y2, BelowY, Y3),
     append(Y3, BottomLeftY, Y4),
-    append(Y4, BottomRightY, ListY).
+    append(Y4, BottomRightY, Y5),
+
+    writeXY(X5, Y5),
+    takeWormholesOut(Board, X5, Y5, [], [], ListX, ListY),
+    writeXY(ListX, ListY).
 
 % Returns Piece on Row and Column
 getPiece(Row, Column, Board, Piece):-
@@ -735,20 +768,66 @@ getBestCellToMoveTo(Board):-
     length(Board, NumOfRows),
     restrictValidCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
 
-calculateBestMove(Board):-
-    getBestCellToMoveTo(Board).
+% Returns the X and Y of the cell that gives more score to the AI
+searchMaxScore(Board, [], [], _, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-
+    write(CellToPlayX), nl, write(CellToPlayY), nl,
+    
+    getPiece(OriginCellY, OriginCellX, Board, PieceToMove),
+    getPiece(CellToPlayY, CellToPlayX, Board, DestinationPiece),
+
+    write(PieceToMove), nl,
+    write(DestinationPiece), nl,
+
+    getShip(PieceToMove, Ships),
+    getShipAux(Ships, IndividualShip),
+    write('Ship e: '),
+    write(IndividualShip),
+
+    setPieceToMove(PieceToMove, DestinationPiece, IndividualShip, colony, NewPiece, 0),
+    removeShipFromPiece(PieceToMove, IndividualShip, OldPiece),
+
+    updateBoard(Board, OldPiece, NewPiece, PieceToMove, OriginCellY, OriginCellX, DestinationPiece, CellToPlayY, CellToPlayX, UpdatedBoard),
+    format('Played from X = ~d, Y = ~d to X = ~d, Y = ~d~n', [OriginCellX, OriginCellY, CellToPlayX, CellToPlayY]),
+    write('*************** AI turn End ***************'), nl, nl.
+
+searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-
+    getScoreFromAdjacentsToCell(player2, Board, X, Y, AdjacentScore),
+    getPiece(Y, X, Board, Piece),
+    getScoreFromStarSystemPiece(Piece, CellScore),
+    TotalScore is AdjacentScore + CellScore,
+    TotalScore > CurrentMaxScore,
+        searchMaxScore(Board, Xs, Ys, TotalScore, X, Y, OriginCellX, OriginCellY, UpdatedBoard);
+    searchMaxScore(Board, Xs, Ys, CurrentMaxScore, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
+
+getAIShips(Board, X, Y):-
+    player2Ship(Ship),
+    getBoardPieces(Board, PieceWithShip),
+    systemHasShip(Ship, PieceWithShip),
+    getPiece(Y, X, Board, PieceWithShip).
+
+chooseShipToMove(0, [X|Xs], [Y|Ys], X, Y).
+chooseShipToMove(PieceDecider, [X|Xs], [Y|Ys], OriginCellX, OriginCellY):-
+    NewPieceDecider is PieceDecider - 1,
+    chooseShipToMove(NewPieceDecider, Xs, Ys, OriginCellX, OriginCellY).
+
+getShipAux([X|Xs], X).
 
 % Does AI turn
 playerTurn(Board, ai, UpdatedBoard):-
-    %write('*************** AI turn ***************'), nl, nl,
-    %display_board(Board), nl, nl,
+    write('*************** AI turn ***************'), nl, nl,
 
-    getAllPossibleCellsToMove(Board, 1, 3, ListX, ListY),
+    findall(X, getAIShips(Board, X, Y), PiecesWithShipPositionX),
+    findall(Y, getAIShips(Board, X, Y), PiecesWithShipPositionY),
+
+    %writeXY(PiecesWithShipPositionX, PiecesWithShipPositionY),
+    random(0, 4, PieceDecider),
+    /*write('Este e o num = '),
+    write(PieceDecider), nl,*/
+    chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
+
+    getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
     writeXY(ListX, ListY),
-
-    %calculateBestMove(Board),
-    UpdatedBoard = Board.
-    %clearScreen(60).
+    searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, UpdatedBoard):-

@@ -1,3 +1,4 @@
+:- use_module(library(random)).
 :- include('logic.pl').
 
 assignGameMode(1, playerVSplayer).
@@ -38,7 +39,6 @@ playGameMode(playerVSplayer):-
 
 playGameMode(playerVSai):-
         initial_logic_board(Board),
-        %StartingPlayer is random(1),
         playPlayerAI(Board, ai).
 
 playGameMode(aiVSai):-
