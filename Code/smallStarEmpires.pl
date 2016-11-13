@@ -27,8 +27,8 @@ askForYoungestPlayer(YoungestPlayer):-
         read(YoungestPlayer), nl, nl.
 
 startGame:- 
-    displayMenu(GameMode),
-    playGameMode(GameMode).
+    %displayMenu(GameMode),
+    playGameMode(playerVSai).
 
 playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),
