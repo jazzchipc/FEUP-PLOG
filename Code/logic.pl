@@ -50,12 +50,11 @@ initial_logic_board([
     ]
     ).
 
-
 /*** GET INFORMATION FROM CELLS ***/
 
 canFlyOver(Board, X, Y):-
     getPiece(Y, X, Board, Piece),
-    (isSystemFree(Piece); systemBelongsToPlayer(ai, Piece); isNebulaSystem(Piece)).
+    (isSystemFree(Piece); systemBelongsToPlayer(player2, Piece); isNebulaSystem(Piece)).
 
 takeWormholesOut(_, [], [], TempX, TempY, ListX, ListY):-
     ListX = TempX,
@@ -762,17 +761,6 @@ searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY)
         searchMaxScore(Board, Xs, Ys, TotalScore, X, Y);
     searchMaxScore(Board, Xs, Ys, CurrentMaxScore, CellToPlayX, CellToPlayY).
 
-getPiecesWithShipsBelongingToAI([], TempPieces, ListMoveablePieces):-
-    ListMoveablePieces = TempPieces.
-getPiecesWithShipsBelongingToAI([A, B, Ships, C|Xs], TempPieces, ListMoveablePieces):-
-    (member(shipWdamaged, Ships); member(shipXdamaged, Ships); member(shipYdamaged, Ships); member(shipZdamaged, Ships)),
-    write('Exists'), nl,
-    getPiecesWithShipsBelongingToAI(Xs, [A, B, Ships, C|TempPieces], ListMoveablePieces).
-getPiecesWithShipsBelongingToAI([_, _, Ships, _|Xs], TempPieces, ListMoveablePieces):-
-    getPiecesWithShipsBelongingToAI(Xs, TempPieces, ListMoveablePieces).
-getPiecesWithShipsBelongingToAI([_|Xs], TempPieces, ListMoveablePieces):-
-    getPiecesWithShipsBelongingToAI(Xs, TempPieces, ListMoveablePieces).
-
 getAIShips(Board, X, Y):-
     player2Ship(Ship),
     getBoardPieces(Board, PieceWithShip),
@@ -784,6 +772,8 @@ chooseShipToMove(PieceDecider, [X|Xs], [Y|Ys], OriginCellX, OriginCellY):-
     NewPieceDecider is PieceDecider - 1,
     chooseShipToMove(NewPieceDecider, Xs, Ys, OriginCellX, OriginCellY).
 
+getShipAux([X|Xs], X).
+
 % Does AI turn
 playerTurn(Board, ai, UpdatedBoard):-
     write('*************** AI turn ***************'), nl, nl,
@@ -791,21 +781,26 @@ playerTurn(Board, ai, UpdatedBoard):-
     findall(X, getAIShips(Board, X, Y), PiecesWithShipPositionX),
     findall(Y, getAIShips(Board, X, Y), PiecesWithShipPositionY),
 
-    writeXY(PiecesWithShipPositionX, PiecesWithShipPositionY),
+    %writeXY(PiecesWithShipPositionX, PiecesWithShipPositionY),
     random(0, 4, PieceDecider),
-    write('Este e o num = '),
-    write(PieceDecider), nl,
+    /*write('Este e o num = '),
+    write(PieceDecider), nl,*/
     chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
 
 
     getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
+    writeXY(ListX, ListY),
     searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY),
 
     getPiece(OriginCellY, OriginCellX, Board, PieceToMove),
     getPiece(CellToPlayY, CellToPlayX, Board, DestinationPiece),
 
-    setPieceToMove(PieceToMove, DestinationPiece, shipWdamaged, colony, NewPiece, 0),
-    removeShipFromPiece(PieceToMove, shipWdamaged, OldPiece),
+    getShip(PieceToMove, Ship),
+    getShipAux(Ship, MyShip),
+    write(MyShip),
+
+    setPieceToMove(PieceToMove, DestinationPiece, MyShip, colony, NewPiece, 0),
+    removeShipFromPiece(PieceToMove, MyShip, OldPiece),
 
     updateBoard(Board, OldPiece, NewPiece, PieceToMove, OriginCellY, OriginCellX, DestinationPiece, CellToPlayY, CellToPlayX, UpdatedBoard),
     
