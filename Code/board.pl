@@ -408,7 +408,7 @@ display_board(Board):-
     first(FirstRow, Board),
     length(FirstRow, NumOfElementsFirstRow),
 
-    last(LastRow, Board),
+    myLast(LastRow, Board),
     length(LastRow, NumOfElementsLastRow),
 
     display_start_lines(NumOfElementsFirstRow, FirstRow),
