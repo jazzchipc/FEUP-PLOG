@@ -6,9 +6,6 @@ myInit:- board(B), getNthCell(0, 1, B, Cell), write(Cell).
 
 /*** LIST UTILS ***/
 
-prefix([],Ys).
-prefix([X|Xs], [X|Ys]):- prefix(Xs,Ys).
-
 sufix(Xs, Xs).
 sufix(Xs, [Y|Ys]):- suffix(Xs, Ys).
 
@@ -20,8 +17,8 @@ length([X|Xs], s(N)):- length(Xs, N).
 
 first(X, [X|_]).
 
-last(X, [X]).
-last(X, [_|Z]) :- last(X, Z).
+myLast(X, [X]).
+myLast(X, [_|Z]) :- myLast(X, Z).
 
 display_list([]).
 

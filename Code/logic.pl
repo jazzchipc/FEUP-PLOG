@@ -27,11 +27,9 @@ free - free system
 /*** LIST OF SHIPS
 Player one: 
     -shipA, shipB, shipC, shipD
-    -shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged
 
 Player two:
     -shipW, shipX, shipY, shipZ
-    -shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged
 */
 
 /*** BUILDING
@@ -45,8 +43,8 @@ none - none
 initial_logic_board([
     [[star2, free, [], none], [star2, free, [], none], [wormhole]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [blackhole], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
+    [[home, player1, [shipA, shipB, shipC, shipD], none], [blackhole], [emptyS, free, [], none]],
+    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
@@ -55,8 +53,8 @@ initial_logic_board([
 
 min_board([
 [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-[[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star1, free, [], none], [emptyS, free, [], none]],
-[[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]]
+[[home, player1, [shipA, shipB, shipC, shipD], none], [star1, free, [], none], [emptyS, free, [], none]],
+[[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]]
 ]
 ).
 
@@ -123,31 +121,10 @@ ship(shipX).
 ship(shipY).
 ship(shipZ).
 
-shipDamaged(shipAdamaged).
-shipDamaged(shipBdamaged).
-shipDamaged(shipCdamaged).
-shipDamaged(shipDdamaged).
-
-shipDamaged(shipWdamaged).
-shipDamaged(shipXdamaged).
-shipDamaged(shipYdamaged).
-shipDamaged(shipZdamaged).
-
-isShipNotDamaged(X):-
-    ship(X).
-
-isShipDamaged(X):-
-    shipDamaged(X).
-
 player1Ship(shipA).
 player1Ship(shipB).
 player1Ship(shipC).
 player1Ship(shipD).
-
-player1Ship(shipAdamaged).
-player1Ship(shipBdamaged).
-player1Ship(shipCdamaged).
-player1Ship(shipDdamaged).
 
 shipBelongsToPlayer1(X):-
     player1Ship(X).
@@ -155,12 +132,7 @@ shipBelongsToPlayer1(X):-
 player2Ship(shipW).
 player2Ship(shipX).
 player2Ship(shipY).
-player2Ship(shipZ). 
-
-player2Ship(shipWdamaged).
-player2Ship(shipXdamaged).
-player2Ship(shipYdamaged).
-player2Ship(shipZdamaged).
+player2Ship(shipZ).
 
 shipBelongsToPlayer2(X):-
     player2Ship(X).
@@ -410,14 +382,14 @@ removeShipFromPiece([Type, Owner, Ships, Building], Ship, [Type, Owner, NewShips
     delete(Ships, Ship, NewShips).
 
 % Assigns ship based on user input
-assignShip(a, shipAdamaged).
-assignShip(b, shipBdamaged).
-assignShip(c, shipCdamaged).
-assignShip(d, shipDdamaged).
-assignShip(w, shipWdamaged).
-assignShip(x, shipXdamaged).
-assignShip(y, shipYdamaged).
-assignShip(z, shipZdamaged).
+assignShip(a, shipA).
+assignShip(b, shipB).
+assignShip(c, shipC).
+assignShip(d, shipD).
+assignShip(w, shipW).
+assignShip(x, shipX).
+assignShip(y, shipY).
+assignShip(z, shipZ).
 
 % Assigns building based on user input
 assignBuilding(t, trade).
@@ -531,12 +503,12 @@ getTotalScoreOfPlayer(Player, Board, TotalScore):-
 
 % Checks if ship to move belongs to the player who is playing
 canPlayerMoveSelectedShip(1, Ship):-
-    (Ship == shipAdamaged; Ship == shipBdamaged; Ship == shipCdamaged; Ship == shipDdamaged);
+    (Ship == shipA; Ship == shipB; Ship == shipC; Ship == shipD);
     !,
     write('***** You entered a ship that is not yours to command! *****'), nl,
     fail.
 canPlayerMoveSelectedShip(2, Ship):-
-    (Ship == shipWdamaged; Ship == shipXdamaged; Ship == shipYdamaged; Ship == shipZdamaged);
+    (Ship == shipW; Ship == shipX; Ship == shipY; Ship == shipZ);
     !,
     write('***** You entered a ship that is not yours to command! *****'), nl,
     fail.
@@ -693,10 +665,7 @@ endGame(Board):-
 verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
     ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
     ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)));
-    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf)));
-    
-    (nl, fail).
-    %(write('The given cell is not in a possible direction'), nl, fail).
+    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf))).
 
 % Checks if the landing cell is valid
 checkValidLandingCell([_, free, _, _]).
@@ -745,18 +714,26 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     write('Select number of cells to travel'), nl,
     read(NumOfCells), nl,
     
-    moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
+    (moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow) ;
+    (write('Cannot move cell to the chosen destiny.'), nl, fail)),
 
     (getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece)
     ;
     (write('There is no cell in those coordinates.'), nl, fail)),
 
     % check if the destination cell is a valid one
-    checkValidLandingCell(DestinationPiece),
+    (checkValidLandingCell(DestinationPiece)
+    ;
+    (((isBlackhole(DestinationPiece), write('You cant land in a blackhole!'));
+    (isWormhole(DestinationPiece), write('You cant land in a wormhole!'));
+    (isSystemOwned(DestinationPiece)), write('You cant land in an occupied cell!')),
+    nl, fail)),
 
     % check if path is uninterrupted
-    ((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
-    unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
+    ((((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
+    unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow))
+    ;
+    (write('This path you shall not take, for great dangers reside in it.'), nl, fail)),
 
     !,
     repeat,
@@ -764,7 +741,9 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     read(UserBuilding),
     assignBuilding(UserBuilding, Building),
     checkValidBuilding(Building),
-    numOfBuildings(MyPlayer, Building, Num), Num > 0,
+
+    ((numOfBuildings(MyPlayer, Building, Num), Num > 0) ;
+    (write('You are out of buildings of that type.'), nl, fail)),
 
     setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, Building, NewPiece, 0),
     removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),

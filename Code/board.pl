@@ -60,23 +60,14 @@ translate(player1, 'P1').
 translate(player2, 'P2').
 translate(free, '  ').
 
-translate(shipA, 'A').
-translate(shipB, 'B').
-translate(shipC, 'C').
-translate(shipD, 'D').
-translate(shipW, 'W').
-translate(shipX, 'X').
-translate(shipY, 'Y').
-translate(shipZ, 'Z').
-
-translate(shipAdamaged, 'a').
-translate(shipBdamaged, 'b').
-translate(shipCdamaged, 'c').
-translate(shipDdamaged, 'd').
-translate(shipWdamaged, 'w').
-translate(shipXdamaged, 'x').
-translate(shipYdamaged, 'y').
-translate(shipZdamaged, 'z').
+translate(shipA, 'a').
+translate(shipB, 'b').
+translate(shipC, 'c').
+translate(shipD, 'd').
+translate(shipW, 'w').
+translate(shipX, 'x').
+translate(shipY, 'y').
+translate(shipZ, 'z').
 
 translate(colony, '(C)').
 translate(trade, '[T]').
@@ -346,7 +337,7 @@ display_line_8_aux(NumberHexagons, LastRow):-
         translate(db, CloseHex),
         translate(s3, SpaceInsideHex2),
         write(CloseHex),
-        %display_piece_line_3(CurrentPiece),
+        display_piece_line_3(CurrentPiece),
         write(OpenHex),
         write(SpaceInsideHex2),
         display_line_8_aux(N1, RemainingPieces);
@@ -365,7 +356,7 @@ display_line_9_aux(NumberHexagons, LastRow):-
         translate(db, CloseHex),
         translate(s5, SpaceBetweenHex),
         write(CloseHex),
-        %display_piece_line_4(CurrentPiece),
+        display_piece_line_4(CurrentPiece),
         write(OpenHex),
         write(SpaceBetweenHex),
         display_line_9_aux(N1, RemainingPieces);
@@ -408,7 +399,7 @@ display_board(Board):-
     first(FirstRow, Board),
     length(FirstRow, NumOfElementsFirstRow),
 
-    last(LastRow, Board),
+    myLast(LastRow, Board),
     length(LastRow, NumOfElementsLastRow),
 
     display_start_lines(NumOfElementsFirstRow, FirstRow),
