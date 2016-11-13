@@ -667,21 +667,19 @@ endGame(Board):-
 verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
     ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
     ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)));
-    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf)));
-    
-    (write('The given cell is not in a possible direction'), nl, fail).
+    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf))).
 
 % Checks if the landing cell is valid
 checkValidLandingCell([_, free, _, _]).
 checkValidLandingCell([wormhole]):-
-    write('You cant land in a wormhole!'), nl,
+    %write('You cant land in a wormhole!'), nl,
     fail.
 checkValidLandingCell([blackhole]):-
-    write('You cant land in a blackhole!'), nl,
+    %write('You cant land in a blackhole!'), nl,
     fail.
 checkValidLandingCell(Cell):-
     isSystemOwned(Cell),
-    write('You cant land in an occupied cell!'), nl,
+    %write('You cant land in an occupied cell!'), nl,
     fail.
 
 myDebug(ShipToMove, PieceToMove, DestinationPiece, NewPiece, OldPiece):-
@@ -718,18 +716,26 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     write('Select number of cells to travel'), nl,
     read(NumOfCells), nl,
     
-    moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
+    (moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow) ;
+    (write('Cannot move cell to the chosen destiny.'), nl, fail)),
 
     (getPiece(DestinationRow, DestinationColumn, Board, DestinationPiece)
     ;
     (write('There is no cell in those coordinates.'), nl, fail)),
 
     % check if the destination cell is a valid one
-    checkValidLandingCell(DestinationPiece),
+    (checkValidLandingCell(DestinationPiece)
+    ;
+    (((isBlackhole(DestinationPiece), write('You cant land in a blackhole!'));
+    (isWormhole(DestinationPiece), write('You cant land in a wormhole!'));
+    (isSystemOwned(DestinationPiece)), write('You cant land in an occupied cell!')),
+    nl, fail)),
 
     % check if path is uninterrupted
-    ((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
-    unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
+    ((((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
+    unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow))
+    ;
+    (write('This path you shall not take, for great dangers reside in it.'), nl, fail)),
 
     !,
     repeat,
@@ -737,7 +743,9 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     read(UserBuilding),
     assignBuilding(UserBuilding, Building),
     checkValidBuilding(Building),
-    numOfBuildings(MyPlayer, Building, Num), Num > 0,
+
+    ((numOfBuildings(MyPlayer, Building, Num), Num > 0) ;
+    (write('You are out of buildings of that type.'), nl, fail)),
 
     setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, Building, NewPiece, 0),
     removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
