@@ -849,7 +849,6 @@ playerTurn(Board, ai, UpdatedBoard):-
     getAllPossibleCellsToMove(player1, Board, OriginCellX, OriginCellY, ListX, ListY),
 
     length(ListX, NumOfCellsCanMove),
-    write(NumOfCellsCanMove), nl,
     NumOfCellsCanMove > 0,
         first(FirstX, ListX),
         first(FirstY, ListY),
@@ -874,7 +873,6 @@ playerTurn(Board, ai2, UpdatedBoard):-
     getAllPossibleCellsToMove(player2, Board, OriginCellX, OriginCellY, ListX, ListY),
 
     length(ListX, NumOfCellsCanMove),
-    write(NumOfCellsCanMove), nl,
     NumOfCellsCanMove > 0,
         first(FirstX, ListX),
         first(FirstY, ListY),
