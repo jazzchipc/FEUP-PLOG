@@ -1,6 +1,7 @@
 :- use_module(library(lists)).
 :- use_module(library(aggregate)).
 :- use_module(library(random)).
+:- use_module(library(system)).
 :- include('board.pl').
 :- include('utils.pl').
 
@@ -636,40 +637,55 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
     ;
     (DifX >= 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
 
+% Verify is PATH is unobstructed (does NOT include final destination -> checked in checkValidLandingCell)
+
+unobstructedPath(Board, Player, Xi, Yi, Direction, 1, Xf, Yf).
+
+unobstructedPath(Board, Player, Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+    N is NumberOfCells - 1,
+    moveNCellsInDirection(Xi, Yi, Direction, N, Xf, Yf),
+    getPiece(Yf, Xf, Board, DestinationPiece),
+    (checkValidLandingCell(DestinationPiece) ; systemBelongsToPlayer(Player, DestinationPiece)),
+    unobstructedPath(Board, Player, Xi, Yi, Direction, N, Xf, Yf).
+
+
 
 /**** VERIFY END OF THE GAME ****/
 
 endGame(Board):-
     
-% verify player 1 ships
-   \+((((player1Ship(Ship1),
-   getBoardPieces(Board, PieceWithShip1),
-   systemHasShip(Ship1, PieceWithShip1),
-   getPiece(Y1, X1, Board, PieceWithShip1),
+    % verify player 1 ships
+    \+((((player1Ship(Ship1),
+    getBoardPieces(Board, PieceWithShip1),
+    systemHasShip(Ship1, PieceWithShip1),
+    getPiece(Y1, X1, Board, PieceWithShip1),
 
-   moveNCellsInDirection(X1, Y1, Direction1, 1, Xf1, Yf1),
-   getPiece(Yf1, Xf1, Board, AdjPiece1),
-   checkValidLandingCell(AdjPiece1))
-   
+    % if he can fly over adjacent houses
+    unobstructedPath(Board, player1, X1, Y1, Direction1, 2, Xu1, Yu1),
+    moveNCellsInDirection(X1, Y1, Direction1, 2, Xf1, Yf1),
+    getPiece(Yf1, Xf1, Board, AdjPiece1),
+    checkValidLandingCell(AdjPiece1))
+    
   ;
-  
-   % verify player 2 ships
-   (player2Ship(Ship2), 
-   getBoardPieces(Board, PieceWithShip2),
-   systemHasShip(Ship2, PieceWithShip2),
-   getPiece(Y2, X2, Board, PieceWithShip2),
+    
+    % verify player 2 ships
+    (player2Ship(Ship2), 
+    getBoardPieces(Board, PieceWithShip2),
+    systemHasShip(Ship2, PieceWithShip2),
+    getPiece(Y2, X2, Board, PieceWithShip2),
 
-   moveNCellsInDirection(X2, Y2, Direction2, 1, Xf2, Yf2),
-   getPiece(Yf2, Xf2, Board, AdjPiece2),
-   checkValidLandingCell(AdjPiece2)))
-   
-   ,!,
-   
-   % verify counters of buildings of both players 
-   (
-       numOfBuildings(player1, Building1, N1), N1 > 0,
-       numOfBuildings(player2, Building2, N2), N2 > 0
-   ))).
+    unobstructedPath(Board, player2, X2, Y2, Direction2, 2, Xu2, Yu2),
+    moveNCellsInDirection(X2, Y2, Direction2, 2, Xf2, Yf2),
+    getPiece(Yf2, Xf2, Board, AdjPiece2),
+    checkValidLandingCell(AdjPiece2)))
+    
+    ,!,
+    
+    % verify counters of buildings of both players 
+    (
+        (numOfBuildings(player1, Building1, N1), N1 > 0) ;
+        (numOfBuildings(player2, Building2, N2), N2 > 0)
+    ))).
 
 
 
@@ -737,21 +753,26 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     % check if the destination cell is a valid one
     checkValidLandingCell(DestinationPiece),
 
+    % check if path is uninterrupted
+    ((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
+    unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
+
     !,
     repeat,
     format('Player ~p, what building would you like to construct?~n   t --> Trade Station~n   c --> Colony~n', [WhoIsPlaying]),
     read(UserBuilding),
     assignBuilding(UserBuilding, Building),
     checkValidBuilding(Building),
+    numOfBuildings(MyPlayer, Building, Num), Num > 0,
 
     setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, Building, NewPiece, 0),
     removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
 
     %% decrease counter
-    numOfBuildings(Player, Building, NumOfBuildings),
+    numOfBuildings(MyPlayer, Building, NumOfBuildings),
     UpdateNumOfBuildings is NumOfBuildings-1,
-    assert(numOfBuildings(Player, Building, UpdateNumOfBuildings)),
-    retract(numOfBuildings(Player, Building, NumOfBuildings)).
+    assert(numOfBuildings(MyPlayer, Building, UpdateNumOfBuildings)),
+    retract(numOfBuildings(MyPlayer, Building, NumOfBuildings)).
 
 % Updates board
 updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard):-
@@ -895,10 +916,16 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
     numOfBuildings(Player, trade, NumOfTrade),
     numOfBuildings(Player, colony, NumOfColonies),
 
-    format('You have: ~d trade station(s) and ~d colony(ies)~n~n', [NumOfTrade, NumOfColonies]),
+    !,
+
+    ((NumOfTrade =< 0, NumOfColonies =< 0, write('You have no more buildings, so you cant colonize. Passing your turn.'), nl, sleep(2), append(Board, [], UpdatedBoard))
+
+    ;
+
+    (format('You have: ~d trade station(s) and ~d colony(ies)~n~n', [NumOfTrade, NumOfColonies]),
 
     readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn),
-    updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard),
+    updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard))),
    
     clearScreen(60).
 
