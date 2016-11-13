@@ -45,7 +45,7 @@ playGameMode(playerVSai):-
 playGameMode(aiVSai):-
         write('********************* THE BATTLE IS ON! *********************'), nl, nl,
         initial_logic_board(Board),
-        playGame(Board, 2).
+        playAIAI(Board, 2).
 
 playPlayerPlayer(Board, WhoIsPlaying):-
         (\+endGame(Board) ;
@@ -85,3 +85,21 @@ playPlayerAI(Board, WhoIsPlaying):-
         !,
         playPlayerAI(UpdatedBoard, 1)).
 
+playAIAI(Board, WhoIsPlaying):-
+        (\+endGame(Board) ;
+        (getTotalScoreOfPlayer(player1, Board, TotalScore1),
+         format('Player 1 has a score of ~d points.~n', [TotalScore1]),
+        
+        getTotalScoreOfPlayer(player2, Board, TotalScore2),
+        format('Player 2 has a score of ~d points.~n', [TotalScore2]),
+        
+        fail)),
+
+        (WhoIsPlaying == ai,
+        playerTurn(Board, ai, UpdatedBoard),
+        !,
+        playAIAI(UpdatedBoard, ai2);
+
+        playerTurn(Board, ai2, UpdatedBoard),
+        !,
+        playAIAI(UpdatedBoard, ai)).
