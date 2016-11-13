@@ -33,7 +33,7 @@ startGame:-
 playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),
         write('********************* THE BATTLE IS ON! *********************'), nl, nl,
-        initial_logic_board(Board),
+        test_board(Board),
         \+(playPlayerPlayer(Board, YoungestPlayer))
         .
 
@@ -53,7 +53,16 @@ playPlayerPlayer(Board, WhoIsPlaying):-
          format('Player 1 has a score of ~d points.~n', [TotalScore1]),
         
         getTotalScoreOfPlayer(player2, Board, TotalScore2),
-        format('Player 2 has a score of ~d points.~n', [TotalScore2]),
+        format('Player 2 has a score of ~d points.~n', [TotalScore2]), nl, nl,
+
+        ((TotalScore1 > TotalScore2,
+        write('***** WINNER: player1 *****'));
+
+        (TotalScore1 < TotalScore2,
+        write('***** WINNER: player2 *****'));
+
+        (TotalScore1 =:= TotalScore2,
+        write('***** DRAW *****'))),
         
         fail)),
 
