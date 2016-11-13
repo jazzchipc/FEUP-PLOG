@@ -72,11 +72,13 @@ takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
 isStarSystem1([star1, _ , _, _]).
 isStarSystem2([star2, _ , _, _]).
 isStarSystem3([star3, _ , _, _]).
+isStarSystemEmpty([emptyS, _ , _, _]).
 
 isStarSystem(X):-
     isStarSystem1(X);
     isStarSystem2(X);
-    isStarSystem3(X).
+    isStarSystem3(X);
+    isStarSystemEmpty(X).
 
 isEmptySystem([emptyS, _ , _, _]).
 
@@ -438,7 +440,8 @@ getBoardPiece(Board, Piece, X, Y):-
 starSystemScore(StarSystem, Score):-
     (isStarSystem1(StarSystem), Score is 1);
     (isStarSystem2(StarSystem), Score is 2);
-    (isStarSystem3(StarSystem), Score is 3).
+    (isStarSystem3(StarSystem), Score is 3);
+    (isStarSystemEmpty(StarSystem), Score is 0).
 
 getScoreFromStarSystemPiece(Piece, Score):-
     isStarSystem(Piece), starSystemScore(Piece, Score).
@@ -752,6 +755,8 @@ getBestCellToMoveTo(Board):-
 
 % Returns the X and Y of the cell that gives more score to the AI
 searchMaxScore(Board, [], [], _, Building, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-    
+    format('Im playing to X = ~d, Y = ~d~n', [CellToPlayX, CellToPlayY]),
+    
     getPiece(OriginCellY, OriginCellX, Board, PieceToMove),
     getPiece(CellToPlayY, CellToPlayX, Board, DestinationPiece),
 
@@ -767,7 +772,7 @@ searchMaxScore(Board, [], [], _, Building, CellToPlayX, CellToPlayY, OriginCellX
     removeShipFromPiece(PieceToMove, IndividualShip, OldPiece),
 
     updateBoard(Board, OldPiece, NewPiece, PieceToMove, OriginCellY, OriginCellX, DestinationPiece, CellToPlayY, CellToPlayX, UpdatedBoard),
-    %format('AI moved ship from X = ~d, Y = ~d to X = ~d, Y = ~d~n', [OriginCellX, OriginCellY, CellToPlayX, CellToPlayY]),
+    format('AI moved ship from X = ~d, Y = ~d to X = ~d, Y = ~d~n', [OriginCellX, OriginCellY, CellToPlayX, CellToPlayY]),
     nl, write('*************** AI turn End ***************'), nl, nl.
 
 searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, Building, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-
@@ -800,14 +805,28 @@ playerTurn(Board, ai, UpdatedBoard):-
     findall(X, getAIShips(Board, X, Y), PiecesWithShipPositionX),
     findall(Y, getAIShips(Board, X, Y), PiecesWithShipPositionY),
 
+    !,
+    repeat,
     random(0, 4, PieceDecider),
-    write('Este e o num = '),
-    write(PieceDecider), nl,
     chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
 
     getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
     writeXY(ListX, ListY),
-    searchMaxScore(Board, ListX, ListY, 0, colony, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
+
+    length(ListX, NumOfCellsCanMove),
+    write('Este e o num = '),
+    write(PieceDecider), nl,
+    write('lalalalalalal:   '),
+    write(NumOfCellsCanMove), nl,
+    NumOfCellsCanMove > 0,
+        first(FirstX, ListX),
+        first(FirstY, ListY),
+        format('Starting with these values: X = ~d, Y = ~d~n', [FirstX, FirstY]),
+        searchMaxScore(Board, ListX, ListY, 0, colony, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
+    write('Failed, trying again'), nl,
+    fail.
+
+    %searchMaxScore(Board, ListX, ListY, 0, colony, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
