@@ -4,6 +4,8 @@
 :- include('board.pl').
 :- include('utils.pl').
 
+:- dynamic numOfBuildings/3.
+
 /*** LOGICAL ARRAY KEYWORDS ***/
 
 /*** TYPES OF SYSTEMS 
@@ -61,7 +63,7 @@ takeWormholesOut(_, [], [], TempX, TempY, ListX, ListY):-
     ListY = TempY.
 takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
     getPiece(Y, X, Board, Piece),
-    (isWormhole(Piece); isSystemOwned(Piece)),
+    (isWormhole(Piece); systemBelongsToPlayer(player1, Piece); systemBelongsToPlayer(player2, Piece)),
     takeWormholesOut(Board, Xs, Ys, TempX, TempY, ListX, ListY).
 takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
     takeWormholesOut(Board, Xs, Ys, [X|TempX], [Y|TempY], ListX, ListY).
@@ -630,10 +632,10 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 
 /**** VERIFY END OF THE GAME ****/
 
-continueGame(Board):-
+endGame(Board):-
     
     % verify player 1 ships
-    (player1Ship(Ship1),
+    \+(((player1Ship(Ship1),
     getBoardPieces(Board, PieceWithShip1),
     systemHasShip(Ship1, PieceWithShip1),
     getPiece(Y1, X1, Board, PieceWithShip1),
@@ -642,7 +644,7 @@ continueGame(Board):-
     getPiece(Yf1, Xf1, Board, AdjPiece1),
     checkValidLandingCell(AdjPiece1))
     
-    ,
+    ,!,
     
     % verify player 2 ships
     (player2Ship(Ship2), 
@@ -652,7 +654,15 @@ continueGame(Board):-
 
     moveNCellsInDirection(X2, Y2, Direction2, 1, Xf2, Yf2),
     getPiece(Yf2, Xf2, Board, AdjPiece2),
-    checkValidLandingCell(AdjPiece2)).
+    checkValidLandingCell(AdjPiece2))
+    
+    ,!,
+    
+    % verify counters of buildings of both players 
+    (
+        numOfBuildings(player1, Building1, N1), N1 > 0,
+        numOfBuildings(player2, Building2, N2), N2 > 0
+    ))).
 
 
 
@@ -702,8 +712,8 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     systemHasShip(ShipToMove, PieceToMove),
     getPiece(PieceToMoveRow, PieceToMoveColumn, Board, PieceToMove),
 
-    !,
-    repeat,
+    /*!,
+    repeat,*/
     
     write('Select direction to travel'), nl,
     read(Direction), nl,
@@ -728,7 +738,13 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     checkValidBuilding(Building),
 
     setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, Building, NewPiece, 0),
-    removeShipFromPiece(PieceToMove, ShipToMove, OldPiece).
+    removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
+
+    %% decrease counter
+    numOfBuildings(Player, Building, NumOfBuildings),
+    UpdateNumOfBuildings is NumOfBuildings-1,
+    assert(numOfBuildings(Player, Building, UpdateNumOfBuildings)),
+    retract(numOfBuildings(Player, Building, NumOfBuildings)).
 
 % Updates board
 updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard):-
@@ -833,7 +849,22 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
     format('*************** Player ~d turn *************** ~n~n', [WhoIsPlaying]),
     display_board(Board), nl, nl,
 
+    ((WhoIsPlaying =:= 1, Player = player1) ; (WhoIsPlaying =:= 2, Player = player2)),
+
+    numOfBuildings(Player, trade, NumOfTrade),
+    numOfBuildings(Player, colony, NumOfColonies),
+
+    format('You have: ~d trade station(s) and ~d colony(ies)~n~n', [NumOfTrade, NumOfColonies]),
+
     readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn),
     updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard),
    
     clearScreen(60).
+
+/**** Trade station and Colony counter ****/
+
+numOfBuildings(player1, trade, 0).
+numOfBuildings(player2, trade, 0).
+
+numOfBuildings(player1, colony, 1).
+numOfBuildings(player2, colony, 1).
