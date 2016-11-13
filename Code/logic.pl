@@ -791,19 +791,12 @@ getBestCellToMoveTo(Board):-
     restrictValidCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
 
 % Returns the X and Y of the cell that gives more score to the AI
-searchMaxScore(Board, [], [], _, Building, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-    
-    format('Im playing to X = ~d, Y = ~d~n', [CellToPlayX, CellToPlayY]),
-    
+searchMaxScore(Board, [], [], _, Building, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-        
     getPiece(OriginCellY, OriginCellX, Board, PieceToMove),
     getPiece(CellToPlayY, CellToPlayX, Board, DestinationPiece),
 
-    /*write(PieceToMove), nl,
-    write(DestinationPiece), nl,*/
-
     getShip(PieceToMove, Ships),
     getShipAux(Ships, IndividualShip),
-    /*write('Ship e: '),
-    write(IndividualShip),*/
 
     setPieceToMove(PieceToMove, DestinationPiece, IndividualShip, Building, NewPiece, 0),
     removeShipFromPiece(PieceToMove, IndividualShip, OldPiece),
@@ -832,11 +825,10 @@ getAI2Ships(Board, X, Y):-
     systemHasShip(Ship, PieceWithShip),
     getPiece(Y, X, Board, PieceWithShip).
 
-chooseShipToMove(Board, OriginCellX, OriginCellY):-
-  random(0, 4, ShipDecider),
-  ((ShipDecider == 0, MyShip = shipWdamaged) ; (ShipDecider == 1, MyShip = shipXdamaged) ;
-  (ShipDecider == 2, MyShip = shipYdamaged) ; (ShipDecider == 3, MyShip = shipZdamaged)),
-  getPiece(OriginCellY, OriginCellX, Board, MyPiece) , systemHasShip(MyShip, MyPiece).
+chooseShipToMove(0, [X|Xs], [Y|Ys], X, Y).
+chooseShipToMove(PieceDecider, [X|Xs], [Y|Ys], OriginCellX, OriginCellY):-
+    NewPieceDecider is PieceDecider - 1,
+    chooseShipToMove(NewPieceDecider, Xs, Ys, OriginCellX, OriginCellY).
 
 getShipAux([X|Xs], X).
 
@@ -851,23 +843,17 @@ playerTurn(Board, ai, UpdatedBoard):-
     !,
     repeat,
    
-    chooseShipToMove(Board, OriginCellX, OriginCellY),
-    write('Protect'), nl,
-    write('X = '), write(OriginCellX), nl,
-    write('Y = '), write(OriginCellY), nl,
-    write('Protect'), nl,
+    random(0, 4, PieceDecider),
+    chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
 
     getAllPossibleCellsToMove(player1, Board, OriginCellX, OriginCellY, ListX, ListY),
-    write('Startign list'), nl,
-    writeXY(ListX, ListY),
 
     length(ListX, NumOfCellsCanMove),
     write(NumOfCellsCanMove), nl,
     NumOfCellsCanMove > 0,
         first(FirstX, ListX),
         first(FirstY, ListY),
-        format('Starting with these values: X = ~d, Y = ~d~n', [FirstX, FirstY]),
-        searchMaxScore(Board, ListX, ListY, 0, colony, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
+        searchMaxScore(Board, ListX, ListY, 0, trade, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
     write('Failed, trying again'), nl,
     fail.
 
@@ -876,29 +862,23 @@ playerTurn(Board, ai2, UpdatedBoard):-
     write('*************** AI turn ***************'), nl, nl,
     display_board(Board),
 
-    findall(X, getAIShips(Board, X, Y), PiecesWithShipPositionX),
-    findall(Y, getAIShips(Board, X, Y), PiecesWithShipPositionY),
+    findall(X, getAI2Ships(Board, X, Y), PiecesWithShipPositionX),
+    findall(Y, getAI2Ships(Board, X, Y), PiecesWithShipPositionY),
 
     !,
     repeat,
    
-    chooseShipToMove(Board, OriginCellX, OriginCellY),
-    write('Protect'), nl,
-    write('X = '), write(OriginCellX), nl,
-    write('Y = '), write(OriginCellY), nl,
-    write('Protect'), nl,
+    random(0, 4, PieceDecider),
+    chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
 
-    getAllPossibleCellsToMove(player1, Board, OriginCellX, OriginCellY, ListX, ListY),
-    write('Startign list'), nl,
-    writeXY(ListX, ListY),
+    getAllPossibleCellsToMove(player2, Board, OriginCellX, OriginCellY, ListX, ListY),
 
     length(ListX, NumOfCellsCanMove),
     write(NumOfCellsCanMove), nl,
     NumOfCellsCanMove > 0,
         first(FirstX, ListX),
         first(FirstY, ListY),
-        format('Starting with these values: X = ~d, Y = ~d~n', [FirstX, FirstY]),
-        searchMaxScore(Board, ListX, ListY, 0, colony, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
+        searchMaxScore(Board, ListX, ListY, 0, trade, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
     write('Failed, trying again'), nl,
     fail.
 
@@ -927,8 +907,8 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
 
 /**** Trade station and Colony counter ****/
 
-numOfBuildings(player1, trade, 0).
-numOfBuildings(player2, trade, 0).
+numOfBuildings(player1, trade, 20).
+numOfBuildings(player2, trade, 20).
 
 numOfBuildings(player1, colony, 20).
 numOfBuildings(player2, colony, 20).

@@ -33,7 +33,7 @@ startGame:-
 playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),
         write('********************* THE BATTLE IS ON! *********************'), nl, nl,
-        test_board(Board),
+        min_board(Board),
         \+(playPlayerPlayer(Board, YoungestPlayer))
         .
 
@@ -45,7 +45,7 @@ playGameMode(playerVSai):-
 playGameMode(aiVSai):-
         write('********************* THE BATTLE IS ON! *********************'), nl, nl,
         initial_logic_board(Board),
-        playAIAI(Board, 2).
+        \+(playAIAI(Board, ai)).
 
 playPlayerPlayer(Board, WhoIsPlaying):-
         (\+endGame(Board) ;
@@ -84,6 +84,15 @@ playPlayerAI(Board, WhoIsPlaying):-
         getTotalScoreOfPlayer(player2, Board, TotalScore2),
         format('AI has a score of ~d points.~n', [TotalScore2]),
         
+        ((TotalScore1 > TotalScore2,
+        write('***** WINNER: player1 *****'));
+
+        (TotalScore1 < TotalScore2,
+        write('***** WINNER: player2 *****'));
+
+        (TotalScore1 =:= TotalScore2,
+        write('***** DRAW *****'))),
+
         fail)),
         
         (WhoIsPlaying == 1,
@@ -104,6 +113,15 @@ playAIAI(Board, WhoIsPlaying):-
         getTotalScoreOfPlayer(player2, Board, TotalScore2),
         format('Player 2 has a score of ~d points.~n', [TotalScore2]),
         
+        ((TotalScore1 > TotalScore2,
+        write('***** WINNER: player1 *****'));
+
+        (TotalScore1 < TotalScore2,
+        write('***** WINNER: player2 *****'));
+
+        (TotalScore1 =:= TotalScore2,
+        write('***** DRAW *****'))),
+
         fail)),
 
         (WhoIsPlaying == ai,
