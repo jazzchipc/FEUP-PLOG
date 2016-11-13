@@ -61,9 +61,9 @@ min_board([
 
 /*** GET INFORMATION FROM CELLS ***/
 
-canFlyOver(Board, X, Y):-
+canFlyOver(OpponentPlayer, Board, X, Y):-
     getPiece(Y, X, Board, Piece),
-    (isBlackhole(Piece); systemBelongsToPlayer(player1, Piece)).
+    (isBlackhole(Piece); systemBelongsToPlayer(OpponentPlayer, Piece)).
 
 takeWormholesOut(_, [], [], TempX, TempY, ListX, ListY):-
     ListX = TempX,
@@ -225,7 +225,7 @@ getAdjacentList(X, Y, ListX, ListY):-
     findall((AdjY), getAdjacent(X, Y, AdjX, AdjY), ListY).
 
 % Auxiliar function to get all the cell to be played
-getOddCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
+getOddCell(OpponentPlayer, Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     (X < 0; Y < 0),
         ListX = Xs,
         ListY = Ys;
@@ -237,26 +237,26 @@ getOddCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     X > NumOfColumns - 1,
         ListX = Xs,
         ListY = Ys;
-    canFlyOver(Board, X, Y),
+    canFlyOver(OpponentPlayer, Board, X, Y),
         ListX = Xs,
         ListY = Ys;
     MovType == topLeft,
         NewX is X - 1,
         NewY is Y - 1,
-        getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        getEvenCell(OpponentPlayer, Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
     MovType == topRight,
         NewY is Y - 1,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        getEvenCell(OpponentPlayer, Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
     MovType == bottomLeft,
         NewX is X - 1,
         NewY is Y + 1,
-        getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        getEvenCell(OpponentPlayer, Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
     MovType == bottomRight,
         NewY is Y + 1,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
+        getEvenCell(OpponentPlayer, Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
 
 % Auxiliar function to get all the cell to be played
-getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
+getEvenCell(OpponentPlayer, Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     (X < 0; Y < 0),
         ListX = Xs,
         ListY = Ys;
@@ -268,82 +268,82 @@ getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
     X > NumOfColumns - 1,
         ListX = Xs,
         ListY = Ys;
-    canFlyOver(Board, X, Y),
+    canFlyOver(OpponentPlayer, Board, X, Y),
         ListX = Xs,
         ListY = Ys;
     MovType == topLeft,
         NewY is Y - 1,
-        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        getOddCell(OpponentPlayer, Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
     MovType == topRight,
         NewX is X + 1,
         NewY is Y - 1,
-        getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        getOddCell(OpponentPlayer, Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
     MovType == above,
         NewY is Y - 2,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        getEvenCell(OpponentPlayer, Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
     MovType == below,
         NewY is Y + 2,
-        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        getEvenCell(OpponentPlayer, Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
     MovType == bottomLeft,
         NewY is Y + 1,
-        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+        getOddCell(OpponentPlayer, Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
     MovType == bottomRight,
         NewX is X + 1,
         NewY is Y + 1,
-        getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
+        getOddCell(OpponentPlayer, Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
 
 % Returns all the top left cells that can be played given a specific X and Y
-getTopLeft(Board, X, Y, ListX, ListY):-
+getTopLeft(OpponentPlayer, Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
         NewX is X - 1,
         NewY is Y - 1,
-        getEvenCell(Board, NewX, NewY, [], [], ListX, ListY, topLeft);
+        getEvenCell(OpponentPlayer, Board, NewX, NewY, [], [], ListX, ListY, topLeft);
     0 =:= mod(Y, 2),
         NewY is Y - 1,
-        getOddCell(Board, X, NewY, [], [], ListX, ListY, topLeft).
+        getOddCell(OpponentPlayer, Board, X, NewY, [], [], ListX, ListY, topLeft).
 
 % Returns all the top right cells that can be played given a specific X and Y
-getTopRight(Board, X, Y, ListX, ListY):-
+getTopRight(OpponentPlayer, Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
         NewY is Y - 1,
-        getEvenCell(Board, X, NewY, [], [], ListX, ListY, topRight);
+        getEvenCell(OpponentPlayer, Board, X, NewY, [], [], ListX, ListY, topRight);
     0 =:= mod(Y, 2),
         NewX is X + 1,
         NewY is Y - 1,
-        getOddCell(Board, NewX, NewY, [], [], ListX, ListY, topRight).
+        getOddCell(OpponentPlayer, Board, NewX, NewY, [], [], ListX, ListY, topRight).
 
 % Returns all the above cells that can be played given a specific X and Y
-getAbove(Board, X, Y, ListX, ListY):-
+getAbove(OpponentPlayer, Board, X, Y, ListX, ListY):-
     NewY is Y - 2,
-    getEvenCell(Board, X, NewY, [], [], ListX, ListY, above).
+    getEvenCell(OpponentPlayer, Board, X, NewY, [], [], ListX, ListY, above).
 
 % Returns all the below cells that can be played given a specific X and Y
-getBelow(Board, X, Y, ListX, ListY):-
+getBelow(OpponentPlayer, Board, X, Y, ListX, ListY):-
     NewY is Y + 2,
-    getEvenCell(Board, X, NewY, [], [], ListX, ListY, below).
+    getEvenCell(OpponentPlayer, Board, X, NewY, [], [], ListX, ListY, below).
 
 % Returns all the bottom left cells that can be played given a specific X and Y
-getBottomLeft(Board, X, Y, ListX, ListY):-
+getBottomLeft(OpponentPlayer, Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
         NewX is X - 1,
         NewY is Y + 1,
-        getEvenCell(Board, NewX, NewY, [], [], ListX, ListY, bottomLeft);
+        getEvenCell(OpponentPlayer, Board, NewX, NewY, [], [], ListX, ListY, bottomLeft);
     0 =:= mod(Y, 2),
         NewY is Y + 1,
-        getOddCell(Board, X, NewY, [], [], ListX, ListY, bottomLeft).
+        getOddCell(OpponentPlayer, Board, X, NewY, [], [], ListX, ListY, bottomLeft).
 
 % Returns all the bottom right cells that can be played given a specific X and Y
-getBottomRight(Board, X, Y, ListX, ListY):-
+getBottomRight(OpponentPlayer, Board, X, Y, ListX, ListY):-
     1 =:= mod(Y, 2),
         NewY is Y + 1,
-        getEvenCell(Board, X, NewY, [], [], ListX, ListY, bottomRight);
+        getEvenCell(OpponentPlayer, Board, X, NewY, [], [], ListX, ListY, bottomRight);
     0 =:= mod(Y, 2),
         NewX is X + 1,
         NewY is Y + 1,
-        getOddCell(Board, NewX, NewY, [], [], ListX, ListY, bottomRight).
+        getOddCell(OpponentPlayer, Board, NewX, NewY, [], [], ListX, ListY, bottomRight).
 
 % Returns the X on the ListX and the Y on the ListY of all the cells that can be playeed given a specific X and Y
-getAllPossibleCellsToMove(Board, X, Y, ListX, ListY):-
+getAllPossibleCellsToMove(OpponentPlayer, Board, X, Y, ListX, ListY):-
     getTopLeft(Board, X, Y, TopLeftX, TopLeftY),
     getTopRight(Board, X, Y, TopRightX, TopRightY),
     getAbove(Board, X, Y, AboveX, AboveY),
@@ -679,19 +679,20 @@ verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
     ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)));
     ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf)));
     
-    (write('The given cell is not in a possible direction'), nl, fail).
+    (nl, fail).
+    %(write('The given cell is not in a possible direction'), nl, fail).
 
 % Checks if the landing cell is valid
 checkValidLandingCell([_, free, _, _]).
 checkValidLandingCell([wormhole]):-
-    write('You cant land in a wormhole!'), nl,
+    %write('You cant land in a wormhole!'), nl,
     fail.
 checkValidLandingCell([blackhole]):-
-    write('You cant land in a blackhole!'), nl,
+    %write('You cant land in a blackhole!'), nl,
     fail.
 checkValidLandingCell(Cell):-
     isSystemOwned(Cell),
-    write('You cant land in an occupied cell!'), nl,
+    %write('You cant land in an occupied cell!'), nl,
     fail.
 
 myDebug(ShipToMove, PieceToMove, DestinationPiece, NewPiece, OldPiece):-
@@ -838,7 +839,7 @@ playerTurn(Board, ai, UpdatedBoard):-
     random(0, 4, PieceDecider),
     chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
 
-    getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
+    getAllPossibleCellsToMove(player1, Board, OriginCellX, OriginCellY, ListX, ListY),
     writeXY(ListX, ListY),
 
     length(ListX, NumOfCellsCanMove),
@@ -867,7 +868,7 @@ playerTurn(Board, ai2, UpdatedBoard):-
     random(0, 4, PieceDecider),
     chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
 
-    getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
+    getAllPossibleCellsToMove(player2, Board, OriginCellX, OriginCellY, ListX, ListY),
     writeXY(ListX, ListY),
 
     length(ListX, NumOfCellsCanMove),
@@ -882,8 +883,6 @@ playerTurn(Board, ai2, UpdatedBoard):-
         searchMaxScore(Board, ListX, ListY, 0, colony, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
     write('Failed, trying again'), nl,
     fail.
-
-
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
