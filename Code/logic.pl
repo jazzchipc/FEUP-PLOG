@@ -755,6 +755,7 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     read(UserBuilding),
     assignBuilding(UserBuilding, Building),
     checkValidBuilding(Building),
+    numOfBuildings(MyPlayer, Building, Num), Num > 0,
 
     setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, Building, NewPiece, 0),
     removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
