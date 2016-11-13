@@ -3,6 +3,8 @@
 :- include('board.pl').
 :- include('utils.pl').
 
+:- dynamic numOfBuildings/3.
+
 /*** LOGICAL ARRAY KEYWORDS ***/
 
 /*** TYPES OF SYSTEMS 
@@ -627,7 +629,16 @@ continueGame(Board):-
     moveNCellsInDirection(X2, Y2, Direction2, 1, Xf2, Yf2),
     write(Xf2), write(Yf2), write(Direction2), nl,
     getPiece(Yf2, Xf2, Board, AdjPiece2),
-    checkValidLandingCell(AdjPiece2)).
+    checkValidLandingCell(AdjPiece2))
+    
+    ,
+    
+    % verify counters of buildings of both players 
+    (
+        numOfBuildings(player1, Building1, N1), N1 > 0,
+        numOfBuildings(player2, Building2, N2), N2 > 0
+    )
+    .
 
 
 
@@ -703,7 +714,13 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     checkValidBuilding(Building),
 
     setPieceToMove(PieceToMove, DestinationPiece, ShipToMove, Building, NewPiece, 0),
-    removeShipFromPiece(PieceToMove, ShipToMove, OldPiece).
+    removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
+
+    %% decrease counter
+    numOfBuildings(Player, Building, NumOfBuildings),
+    UpdateNumOfBuildings is NumOfBuildings-1,
+    assert(numOfBuildings(Player, Building, UpdateNumOfBuildings)),
+    retract(numOfBuildings(Player, Building, NumOfBuildings)).
 
 % Updates board
 updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard):-
@@ -748,7 +765,22 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
     format('*************** Player ~d turn *************** ~n~n', [WhoIsPlaying]),
     display_board(Board), nl, nl,
 
+    ((WhoIsPlaying =:= 1, Player = player1) ; (WhoIsPlaying =:= 2, Player = player2)),
+
+    numOfBuildings(Player, trade, NumOfTrade),
+    numOfBuildings(Player, colony, NumOfColonies),
+
+    format('You have: ~d trade station(s) and ~d colony(ies)~n~n', [NumOfTrade, NumOfColonies]),
+
     readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn),
     updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard),
    
     clearScreen(60).
+
+/**** Trade station and Colony counter ****/
+
+numOfBuildings(player1, trade, 0).
+numOfBuildings(player2, trade, 0).
+
+numOfBuildings(player1, colony, 2).
+numOfBuildings(player2, colony, 2).
