@@ -54,7 +54,7 @@ initial_logic_board([
 
 canFlyOver(Board, X, Y):-
     getPiece(Y, X, Board, Piece),
-    (isSystemFree(Piece); systemBelongsToPlayer(player2, Piece); isNebulaSystem(Piece)).
+    isBlackhole(Piece).
 
 takeWormholesOut(_, [], [], TempX, TempY, ListX, ListY):-
     ListX = TempX,
@@ -227,22 +227,22 @@ getOddCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
         ListX = Xs,
         ListY = Ys;
     canFlyOver(Board, X, Y),
-        MovType == topLeft,
-            NewX is X - 1,
-            NewY is Y - 1,
-            getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-        MovType == topRight,
-            NewY is Y - 1,
-            getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-        MovType == bottomLeft,
-            NewX is X - 1,
-            NewY is Y + 1,
-            getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-        MovType == bottomRight,
-            NewY is Y + 1,
-            getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    ListX = Xs,
-    ListY = Ys.
+        ListX = Xs,
+        ListY = Ys;
+    MovType == topLeft,
+        NewX is X - 1,
+        NewY is Y - 1,
+        getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == topRight,
+        NewY is Y - 1,
+        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == bottomLeft,
+        NewX is X - 1,
+        NewY is Y + 1,
+        getEvenCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == bottomRight,
+        NewY is Y + 1,
+        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
 
 % Auxiliar function to get all the cell to be played
 getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
@@ -258,28 +258,28 @@ getEvenCell(Board, X, Y, Xs, Ys, ListX, ListY, MovType):-
         ListX = Xs,
         ListY = Ys;
     canFlyOver(Board, X, Y),
-        MovType == topLeft,
-            NewY is Y - 1,
-            getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-        MovType == topRight,
-            NewX is X + 1,
-            NewY is Y - 1,
-            getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-        MovType == above,
-            NewY is Y - 2,
-            getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-        MovType == below,
-            NewY is Y + 2,
-            getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-        MovType == bottomLeft,
-            NewY is Y + 1,
-            getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-        MovType == bottomRight,
-            NewX is X + 1,
-            NewY is Y + 1,
-            getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
-    ListX = Xs,
-    ListY = Ys.
+        ListX = Xs,
+        ListY = Ys;
+    MovType == topLeft,
+        NewY is Y - 1,
+        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == topRight,
+        NewX is X + 1,
+        NewY is Y - 1,
+        getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == above,
+        NewY is Y - 2,
+        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == below,
+        NewY is Y + 2,
+        getEvenCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == bottomLeft,
+        NewY is Y + 1,
+        getOddCell(Board, X, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType);
+    MovType == bottomRight,
+        NewX is X + 1,
+        NewY is Y + 1,
+        getOddCell(Board, NewX, NewY, [X|Xs], [Y|Ys], ListX, ListY, MovType).
 
 % Returns all the top left cells that can be played given a specific X and Y
 getTopLeft(Board, X, Y, ListX, ListY):-
@@ -352,7 +352,9 @@ getAllPossibleCellsToMove(Board, X, Y, ListX, ListY):-
     append(Y3, BottomLeftY, Y4),
     append(Y4, BottomRightY, Y5),
 
-    takeWormholesOut(Board, X5, Y5, [], [], ListX, ListY).
+    writeXY(X5, Y5),
+    takeWormholesOut(Board, X5, Y5, [], [], ListX, ListY),
+    writeXY(ListX, ListY).
 
 % Returns Piece on Row and Column
 getPiece(Row, Column, Board, Piece):-
@@ -754,7 +756,6 @@ getBestCellToMoveTo(Board):-
 searchMaxScore(Board, [], [], _, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-
     write(CellToPlayX), nl, write(CellToPlayY), nl,
     
-
     getPiece(OriginCellY, OriginCellX, Board, PieceToMove),
     getPiece(CellToPlayY, CellToPlayX, Board, DestinationPiece),
 
@@ -769,8 +770,9 @@ searchMaxScore(Board, [], [], _, CellToPlayX, CellToPlayY, OriginCellX, OriginCe
     setPieceToMove(PieceToMove, DestinationPiece, IndividualShip, colony, NewPiece, 0),
     removeShipFromPiece(PieceToMove, IndividualShip, OldPiece),
 
-    updateBoard(Board, OldPiece, NewPiece, PieceToMove, OriginCellY, OriginCellX, DestinationPiece, CellToPlayY, CellToPlayX, UpdatedBoard).
-    
+    updateBoard(Board, OldPiece, NewPiece, PieceToMove, OriginCellY, OriginCellX, DestinationPiece, CellToPlayY, CellToPlayX, UpdatedBoard),
+    format('Played from X = ~d, Y = ~d to X = ~d, Y = ~d~n', [OriginCellX, OriginCellY, CellToPlayX, CellToPlayY]),
+    write('*************** AI turn End ***************'), nl, nl.
 
 searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-
     getScoreFromAdjacentsToCell(player2, Board, X, Y, AdjacentScore),
@@ -810,12 +812,6 @@ playerTurn(Board, ai, UpdatedBoard):-
     getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
     writeXY(ListX, ListY),
     searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
-
-    %format('Played from X = ~d, Y = ~d to X = ~d, Y = ~d~n', [OriginCellX, OriginCellY, CellToPlayX, CellToPlayY]),
-
-    write('*************** AI turn End ***************'), nl, nl.
-
-    %clearScreen(60).
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
