@@ -33,7 +33,7 @@ startGame:-
 playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),
         write('********************* THE BATTLE IS ON! *********************'), nl, nl,
-        initial_logic_board(Board),
+        test_board(Board),
         \+(playPlayerPlayer(Board, YoungestPlayer))
         .
 

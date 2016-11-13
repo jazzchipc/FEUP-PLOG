@@ -58,6 +58,17 @@ min_board([
 ]
 ).
 
+test_board([
+    [[star2, player2, [], colony], [star2, free, [], none], [wormhole]],
+    [[star1, player1, [shipA, shipB], colony], [star2, player2, [], colony], [star2, free, [], none]],
+    [[home, player1, [], none], [blackhole], [emptyS, free, [], none]],
+    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
+    [[blackhole], [wormhole], [blackhole]],
+    [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
+    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
+    
+    ]).
+
 /*** GET INFORMATION FROM CELLS ***/
 
 canFlyOver(OpponentPlayer, Board, X, Y):-
@@ -708,7 +719,7 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     /*!,
     repeat,*/
     
-    write('Select direction to travel'), nl,
+    write('Select direction to travel (n, s, nw, ne, sw, se)'), nl,
     read(Direction), nl,
 
     write('Select number of cells to travel'), nl,
@@ -729,11 +740,13 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     (isSystemOwned(DestinationPiece)), write('You cant land in an occupied cell!')),
     nl, fail)),
 
+    % Convert WhoIsPlaying to player1 or player2 atoms
+    ((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
+
     % check if path is uninterrupted
-    ((((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
-    unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow))
+    (unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, Trash1, Trash2)
     ;
-    (write('This path you shall not take, for great dangers reside in it.'), nl, fail)),
+    (write('This path you shall not take, for great dangers reside in it.'), nl, write(PieceToMoveColumn), nl, write(PieceToMoveRow), nl, write(Direction), nl, write(NumOfCells), nl, write(DestinationColumn), nl, write(DestinationRow), fail)),
 
     !,
     repeat,
