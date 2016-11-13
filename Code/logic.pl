@@ -42,10 +42,10 @@ none - none
 /* Element example: [<type of system>, <owner>, <list of ships>, <constructions>] */
 
 initial_logic_board([
-    [[star2, free, [], none], [star2, free, [], none], [wormhole]],
-    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
+    [[star2, player2, [], colony], [star2, free, [], none], [wormhole]],
+    [[star1, player1, [shipAdamaged], colony], [star2, free, [], none], [star2, free, [], none]],
+    [[home, player1, [], none], [star2, free, [], none], [emptyS, free, [], none]],
+    [[star3, player2, [], trade], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
@@ -628,22 +628,36 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
     ;
     (DifX >= 0, abs(DifX) =:= ((abs(DifY) + 1)//2))).
 
+% Verify is PATH is unobstructed (does NOT include final destination -> checked in checkValidLandingCell)
+
+unobstructedPath(Board, Player, Xi, Yi, Direction, 1, Xf, Yf).
+
+unobstructedPath(Board, Player, Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+    N is NumberOfCells - 1,
+    moveNCellsInDirection(Xi, Yi, Direction, N, Xf, Yf),
+    getPiece(Yf, Xf, Board, DestinationPiece),
+    (checkValidLandingCell(DestinationPiece) ; systemBelongsToPlayer(Player, DestinationPiece)),
+    unobstructedPath(Board, Player, Xi, Yi, Direction, N, Xf, Yf).
+
+
 
 /**** VERIFY END OF THE GAME ****/
 
 endGame(Board):-
     
     % verify player 1 ships
-    \+(((player1Ship(Ship1),
+    \+((((player1Ship(Ship1),
     getBoardPieces(Board, PieceWithShip1),
     systemHasShip(Ship1, PieceWithShip1),
     getPiece(Y1, X1, Board, PieceWithShip1),
 
-    moveNCellsInDirection(X1, Y1, Direction1, 1, Xf1, Yf1),
+    % if he can fly over adjacent houses
+    unobstructedPath(Board, player1, X1, Y1, Direction1, 2, Xu1, Yu1),
+    moveNCellsInDirection(X1, Y1, Direction1, 2, Xf1, Yf1),
     getPiece(Yf1, Xf1, Board, AdjPiece1),
     checkValidLandingCell(AdjPiece1))
     
-    ,!,
+    ,
     
     % verify player 2 ships
     (player2Ship(Ship2), 
@@ -651,16 +665,17 @@ endGame(Board):-
     systemHasShip(Ship2, PieceWithShip2),
     getPiece(Y2, X2, Board, PieceWithShip2),
 
-    moveNCellsInDirection(X2, Y2, Direction2, 1, Xf2, Yf2),
+    unobstructedPath(Board, player2, X2, Y2, Direction2, 2, Xu2, Yu2),
+    moveNCellsInDirection(X2, Y2, Direction2, 2, Xf2, Yf2),
     getPiece(Yf2, Xf2, Board, AdjPiece2),
-    checkValidLandingCell(AdjPiece2))
+    checkValidLandingCell(AdjPiece2)))
     
     ,!,
     
     % verify counters of buildings of both players 
     (
-        numOfBuildings(player1, Building1, N1), N1 > 0,
-        numOfBuildings(player2, Building2, N2), N2 > 0
+        (numOfBuildings(player1, Building1, N1), N1 > 0) ;
+        (numOfBuildings(player2, Building2, N2), N2 > 0)
     ))).
 
 
@@ -728,6 +743,10 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
 
     % check if the destination cell is a valid one
     checkValidLandingCell(DestinationPiece),
+
+    % check if path is uninterrupted
+    ((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
+    unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
 
     !,
     repeat,
@@ -853,3 +872,4 @@ numOfBuildings(player2, trade, 0).
 
 numOfBuildings(player1, colony, 1).
 numOfBuildings(player2, colony, 1).
+
