@@ -27,8 +27,8 @@ askForYoungestPlayer(YoungestPlayer):-
         read(YoungestPlayer), nl, nl.
 
 startGame:- 
-    %displayMenu(GameMode),
-    playGameMode(playerVSai).
+    displayMenu(GameMode),
+    playGameMode(GameMode).
 
 playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),
@@ -43,10 +43,12 @@ playGameMode(playerVSplayer):-
         format('Player 2 has a score of ~d points.~n', [TotalScore2]).
 
 playGameMode(playerVSai):-
+        write('********************* THE BATTLE IS ON! *********************'), nl, nl,
         initial_logic_board(Board),
         playPlayerAI(Board, ai).
 
 playGameMode(aiVSai):-
+        write('********************* THE BATTLE IS ON! *********************'), nl, nl,
         initial_logic_board(Board),
         playGame(Board, 2).
 
