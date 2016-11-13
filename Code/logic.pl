@@ -50,6 +50,7 @@ initial_logic_board([
     ]
     ).
 
+
 /*** GET INFORMATION FROM CELLS ***/
 
 canFlyOver(Board, X, Y):-
@@ -627,26 +628,38 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 
 /**** VERIFY END OF THE GAME ****/
 
-endGame(Board):-
+continueGame(Board):-
+    
+    % verify player 1 ships
+    (player1Ship(Ship1),
+    getBoardPieces(Board, PieceWithShip1),
+    systemHasShip(Ship1, PieceWithShip1),
+    getPiece(Y1, X1, Board, PieceWithShip1),
 
-    %% While any ship can be moved    
-    \+(((ship(Ship) ; shipDamaged(Ship)),
-    getBoardPieces(Board, PieceWithShip),
-    systemHasShip(Ship, PieceWithShip),
-    getPiece(Y, X, Board, PieceWithShip),
+    moveNCellsInDirection(X1, Y1, Direction1, 1, Xf1, Yf1),
+    getPiece(Yf1, Xf1, Board, AdjPiece1),
+    checkValidLandingCell(AdjPiece1))
+    
+    ,
+    
+    % verify player 2 ships
+    (player2Ship(Ship2), 
+    getBoardPieces(Board, PieceWithShip2),
+    systemHasShip(Ship2, PieceWithShip2),
+    getPiece(Y2, X2, Board, PieceWithShip2),
 
-    moveNCellsInDirection(X, Y, Direction, 1, Xf, Yf),
-    getPiece(Yf, Xf, Board, AdjPiece),
-    checkValidLandingCell(AdjPiece))).
+    moveNCellsInDirection(X2, Y2, Direction2, 1, Xf2, Yf2),
+    getPiece(Yf2, Xf2, Board, AdjPiece2),
+    checkValidLandingCell(AdjPiece2)).
 
 
 
 /**** USE THIS FUNCTION TO VERIFY THE MOVEMENT OF A SHIP ****/
 verifyValidGeometricDirection(Xi, Yi, Xf, Yf):-
-    (((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
+    ((Xi =:= Xf), (mod(Yi, 2) =:= mod(Yf,2)), Yf \= Yi);
     ((1 =:= mod(Yi, 2), verifyValidDirectionOddRow(Xi, Yi, Xf, Yf)));
-    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf))))
-    ;
+    ((0 =:= mod(Yi, 2), verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf)));
+    
     (write('The given cell is not in a possible direction'), nl, fail).
 
 % Checks if the landing cell is valid
@@ -766,7 +779,7 @@ getAIShips(Board, X, Y):-
     systemHasShip(Ship, PieceWithShip),
     getPiece(Y, X, Board, PieceWithShip).
 
-chooseShipToMove(0, [X|Xs], [Y|Ys], X, Y):-
+chooseShipToMove(0, [X|Xs], [Y|Ys], X, Y).
 chooseShipToMove(PieceDecider, [X|Xs], [Y|Ys], OriginCellX, OriginCellY):-
     NewPieceDecider is PieceDecider - 1,
     chooseShipToMove(NewPieceDecider, Xs, Ys, OriginCellX, OriginCellY).
