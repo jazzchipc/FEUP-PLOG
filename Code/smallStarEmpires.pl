@@ -53,7 +53,16 @@ playPlayerPlayer(Board, WhoIsPlaying):-
          format('Player 1 has a score of ~d points.~n', [TotalScore1]),
         
         getTotalScoreOfPlayer(player2, Board, TotalScore2),
-        format('Player 2 has a score of ~d points.~n', [TotalScore2]),
+        format('Player 2 has a score of ~d points.~n', [TotalScore2]), nl, nl,
+
+        ((TotalScore1 > TotalScore2,
+        write('***** WINNER: player1 *****'));
+
+        (TotalScore1 < TotalScore2,
+        write('***** WINNER: player2 *****'));
+
+        (TotalScore1 =:= TotalScore2,
+        write('***** DRAW *****'))),
         
         fail)),
 

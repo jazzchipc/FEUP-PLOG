@@ -60,9 +60,9 @@ min_board([
 
 test_board([
     [[star2, player2, [], colony], [star2, free, [], none], [wormhole]],
-    [[star1, player1, [shipA, shipB], colony], [star2, player2, [], colony], [star2, free, [], none]],
-    [[home, player1, [], none], [blackhole], [emptyS, free, [], none]],
-    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
+    [[home, player1, [shipA, shipB], colony], [star2, player2, [], colony], [star2, free, [], none]],
+    [[star1, player1, [], colony], [blackhole], [emptyS, free, [], none]],
+    [[star3, player2, [], colony], [nebula, free, [], none], [home, player2, [shipW, shipX, shipY, shipZ], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
