@@ -344,12 +344,12 @@ getBottomRight(OpponentPlayer, Board, X, Y, ListX, ListY):-
 
 % Returns the X on the ListX and the Y on the ListY of all the cells that can be playeed given a specific X and Y
 getAllPossibleCellsToMove(OpponentPlayer, Board, X, Y, ListX, ListY):-
-    getTopLeft(Board, X, Y, TopLeftX, TopLeftY),
-    getTopRight(Board, X, Y, TopRightX, TopRightY),
-    getAbove(Board, X, Y, AboveX, AboveY),
-    getBelow(Board, X, Y, BelowX, BelowY),
-    getBottomLeft(Board, X, Y, BottomLeftX, BottomLeftY),
-    getBottomRight(Board, X, Y, BottomRightX, BottomRightY),
+    getTopLeft(OpponentPlayer, Board, X, Y, TopLeftX, TopLeftY),
+    getTopRight(OpponentPlayer, Board, X, Y, TopRightX, TopRightY),
+    getAbove(OpponentPlayer, Board, X, Y, AboveX, AboveY),
+    getBelow(OpponentPlayer, Board, X, Y, BelowX, BelowY),
+    getBottomLeft(OpponentPlayer, Board, X, Y, BottomLeftX, BottomLeftY),
+    getBottomRight(OpponentPlayer, Board, X, Y, BottomRightX, BottomRightY),
 
     append(TopLeftX, TopRightX, X1),
     append(X1, AboveX, X2),
@@ -819,10 +819,11 @@ getAI2Ships(Board, X, Y):-
     systemHasShip(Ship, PieceWithShip),
     getPiece(Y, X, Board, PieceWithShip).
 
-chooseShipToMove(0, [X|Xs], [Y|Ys], X, Y).
-chooseShipToMove(PieceDecider, [X|Xs], [Y|Ys], OriginCellX, OriginCellY):-
-    NewPieceDecider is PieceDecider - 1,
-    chooseShipToMove(NewPieceDecider, Xs, Ys, OriginCellX, OriginCellY).
+chooseShipToMove(Board, OriginCellX, OriginCellY):-
+  random(0, 4, ShipDecider),
+  ((ShipDecider == 0, MyShip = shipWdamaged) ; (ShipDecider == 1, MyShip = shipXdamaged) ;
+  (ShipDecider == 2, MyShip = shipYdamaged) ; (ShipDecider == 3, MyShip = shipZdamaged)),
+  getPiece(OriginCellY, OriginCellX, Board, MyPiece) , systemHasShip(MyShip, MyPiece).
 
 getShipAux([X|Xs], X).
 
@@ -836,16 +837,18 @@ playerTurn(Board, ai, UpdatedBoard):-
 
     !,
     repeat,
-    random(0, 4, PieceDecider),
-    chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
+   
+    chooseShipToMove(Board, OriginCellX, OriginCellY),
+    write('Protect'), nl,
+    write('X = '), write(OriginCellX), nl,
+    write('Y = '), write(OriginCellY), nl,
+    write('Protect'), nl,
 
     getAllPossibleCellsToMove(player1, Board, OriginCellX, OriginCellY, ListX, ListY),
+    write('Startign list'), nl,
     writeXY(ListX, ListY),
 
     length(ListX, NumOfCellsCanMove),
-    write('Este e o num = '),
-    write(PieceDecider), nl,
-    write('lalalalalalal:   '),
     write(NumOfCellsCanMove), nl,
     NumOfCellsCanMove > 0,
         first(FirstX, ListX),
@@ -857,24 +860,26 @@ playerTurn(Board, ai, UpdatedBoard):-
 
 % Does AI turn
 playerTurn(Board, ai2, UpdatedBoard):-
-    write('*************** AI 2 turn ***************'), nl, nl,
+    write('*************** AI turn ***************'), nl, nl,
     display_board(Board),
 
-    findall(X, getAI2Ships(Board, X, Y), PiecesWithShipPositionX),
-    findall(Y, getAI2Ships(Board, X, Y), PiecesWithShipPositionY),
+    findall(X, getAIShips(Board, X, Y), PiecesWithShipPositionX),
+    findall(Y, getAIShips(Board, X, Y), PiecesWithShipPositionY),
 
     !,
     repeat,
-    random(0, 4, PieceDecider),
-    chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
+   
+    chooseShipToMove(Board, OriginCellX, OriginCellY),
+    write('Protect'), nl,
+    write('X = '), write(OriginCellX), nl,
+    write('Y = '), write(OriginCellY), nl,
+    write('Protect'), nl,
 
-    getAllPossibleCellsToMove(player2, Board, OriginCellX, OriginCellY, ListX, ListY),
+    getAllPossibleCellsToMove(player1, Board, OriginCellX, OriginCellY, ListX, ListY),
+    write('Startign list'), nl,
     writeXY(ListX, ListY),
 
     length(ListX, NumOfCellsCanMove),
-    write('Este e o num = '),
-    write(PieceDecider), nl,
-    write('lalalalalalal:   '),
     write(NumOfCellsCanMove), nl,
     NumOfCellsCanMove > 0,
         first(FirstX, ListX),
