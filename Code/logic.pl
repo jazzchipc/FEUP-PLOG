@@ -767,9 +767,7 @@ getAIShips(Board, X, Y):-
     getPiece(Y, X, Board, PieceWithShip).
 
 chooseShipToMove(0, [X|Xs], [Y|Ys], X, Y):-
-    write('Acabando'), nl.
 chooseShipToMove(PieceDecider, [X|Xs], [Y|Ys], OriginCellX, OriginCellY):-
-    write('AIAIAIA'), nl,
     NewPieceDecider is PieceDecider - 1,
     chooseShipToMove(NewPieceDecider, Xs, Ys, OriginCellX, OriginCellY).
 
@@ -777,21 +775,15 @@ chooseShipToMove(PieceDecider, [X|Xs], [Y|Ys], OriginCellX, OriginCellY):-
 playerTurn(Board, ai, UpdatedBoard):-
     write('*************** AI turn ***************'), nl, nl,
 
-    write('Ola 1'), nl,
+    findall(X, getAIShips(Board, X, Y), PiecesWithShipPositionX),
+    findall(Y, getAIShips(Board, X, Y), PiecesWithShipPositionY),
 
-    getAIShips(Board, PiecesWithShipPositionX, PiecesWithShipPositionY),
-    write('Ola 2'), nl,
-
-    /*random(0, 4, PieceDecider),
+    writeXY(PiecesWithShipPositionX, PiecesWithShipPositionY),
+    random(0, 4, PieceDecider),
     write('Este e o num = '),
-    write(PieceDecider), nl,*/
-    chooseShipToMove(1, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
+    write(PieceDecider), nl,
+    chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
 
-    write('Ola 3'), nl,
-
-    
-    write(OriginCellX), nl,
-    write(OriginCellY), nl,
 
     getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
     searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY),
@@ -803,6 +795,9 @@ playerTurn(Board, ai, UpdatedBoard):-
     removeShipFromPiece(PieceToMove, shipWdamaged, OldPiece),
 
     updateBoard(Board, OldPiece, NewPiece, PieceToMove, OriginCellY, OriginCellX, DestinationPiece, CellToPlayY, CellToPlayX, UpdatedBoard),
+    
+    format('Played from X = ~d, Y = ~d to X = ~d, Y = ~d~n', [OriginCellX, OriginCellY, CellToPlayX, CellToPlayY]),
+
     write('*************** AI turn End ***************'), nl, nl.
 
     %clearScreen(60).
