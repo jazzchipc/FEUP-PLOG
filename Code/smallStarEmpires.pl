@@ -52,7 +52,7 @@ playGameMode(aiVSai):-
         playGame(Board, 2).
 
 playPlayerPlayer(Board, WhoIsPlaying):-
-        (\+ endGame(Board)),
+        continueGame(Board),
 
         (WhoIsPlaying == 1,
         playerTurn(Board, 1, UpdatedBoard),
@@ -64,8 +64,6 @@ playPlayerPlayer(Board, WhoIsPlaying):-
         playPlayerPlayer(UpdatedBoard, 1)).
 
 playPlayerAI(Board, WhoIsPlaying):-
-        (\+ endGame(Board)),
-
         WhoIsPlaying == 1,
         playerTurn(Board, 1, UpdatedBoard),
         !,
