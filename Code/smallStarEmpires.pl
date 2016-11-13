@@ -33,13 +33,13 @@ startGame:-
 playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),
         write('********************* THE BATTLE IS ON! *********************'), nl, nl,
-        min_board(Board),
+        initial_logic_board(Board),
         \+(playPlayerPlayer(Board, YoungestPlayer))
         .
 
 playGameMode(playerVSai):-
         write('********************* THE BATTLE IS ON! *********************'), nl, nl,
-        min_board(Board),
+        initial_logic_board(Board),
         \+(playPlayerAI(Board, ai)).
 
 playGameMode(aiVSai):-
