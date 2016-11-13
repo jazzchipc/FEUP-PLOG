@@ -1,6 +1,7 @@
 :- use_module(library(lists)).
 :- use_module(library(aggregate)).
 :- use_module(library(random)).
+:- use_module(library(system)).
 :- include('board.pl').
 :- include('utils.pl').
 
@@ -759,10 +760,10 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     removeShipFromPiece(PieceToMove, ShipToMove, OldPiece),
 
     %% decrease counter
-    numOfBuildings(Player, Building, NumOfBuildings),
+    numOfBuildings(MyPlayer, Building, NumOfBuildings),
     UpdateNumOfBuildings is NumOfBuildings-1,
-    assert(numOfBuildings(Player, Building, UpdateNumOfBuildings)),
-    retract(numOfBuildings(Player, Building, NumOfBuildings)).
+    assert(numOfBuildings(MyPlayer, Building, UpdateNumOfBuildings)),
+    retract(numOfBuildings(MyPlayer, Building, NumOfBuildings)).
 
 % Updates board
 updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard):-
@@ -858,10 +859,16 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
     numOfBuildings(Player, trade, NumOfTrade),
     numOfBuildings(Player, colony, NumOfColonies),
 
-    format('You have: ~d trade station(s) and ~d colony(ies)~n~n', [NumOfTrade, NumOfColonies]),
+    !,
+
+    ((NumOfTrade =< 0, NumOfColonies =< 0, write('You have no more buildings, so you cant colonize. Passing your turn.'), nl, sleep(2), append(Board, [], UpdatedBoard))
+
+    ;
+
+    (format('You have: ~d trade station(s) and ~d colony(ies)~n~n', [NumOfTrade, NumOfColonies]),
 
     readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn),
-    updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard),
+    updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard))),
    
     clearScreen(60).
 
@@ -870,6 +877,6 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
 numOfBuildings(player1, trade, 0).
 numOfBuildings(player2, trade, 0).
 
-numOfBuildings(player1, colony, 1).
+numOfBuildings(player1, colony, 0).
 numOfBuildings(player2, colony, 1).
 
