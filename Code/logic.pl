@@ -598,25 +598,19 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 
 /**** VERIFY END OF THE GAME ****/
 
-continueGame(Board):-
+endGame(Board):-
     
     % verify player 1 ships
-    (player1Ship(Ship1),
-    write(Ship1),
+    \+(((player1Ship(Ship1),
     getBoardPieces(Board, PieceWithShip1),
     systemHasShip(Ship1, PieceWithShip1),
     getPiece(Y1, X1, Board, PieceWithShip1),
 
-    write(X), write(Y), nl,
-
     moveNCellsInDirection(X1, Y1, Direction1, 1, Xf1, Yf1),
-    write(Xf1), write(Yf1), write(Direction1), nl,
     getPiece(Yf1, Xf1, Board, AdjPiece1),
-    write('1 - Adjac->'), write(AdjPiece1),
-    checkValidLandingCell(AdjPiece1),
-    write('2'))
+    checkValidLandingCell(AdjPiece1))
     
-    ,
+    ,!,
     
     % verify player 2 ships
     (player2Ship(Ship2), 
@@ -624,21 +618,17 @@ continueGame(Board):-
     systemHasShip(Ship2, PieceWithShip2),
     getPiece(Y2, X2, Board, PieceWithShip2),
 
-    write(X2), write(Y2), nl,
-
     moveNCellsInDirection(X2, Y2, Direction2, 1, Xf2, Yf2),
-    write(Xf2), write(Yf2), write(Direction2), nl,
     getPiece(Yf2, Xf2, Board, AdjPiece2),
     checkValidLandingCell(AdjPiece2))
     
-    ,
+    ,!,
     
     % verify counters of buildings of both players 
     (
         numOfBuildings(player1, Building1, N1), N1 > 0,
         numOfBuildings(player2, Building2, N2), N2 > 0
-    )
-    .
+    ))).
 
 
 
@@ -782,5 +772,5 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
 numOfBuildings(player1, trade, 0).
 numOfBuildings(player2, trade, 0).
 
-numOfBuildings(player1, colony, 2).
-numOfBuildings(player2, colony, 2).
+numOfBuildings(player1, colony, 1).
+numOfBuildings(player2, colony, 1).
