@@ -600,19 +600,13 @@ continueGame(Board):-
     
     % verify player 1 ships
     (player1Ship(Ship1),
-    write(Ship1),
     getBoardPieces(Board, PieceWithShip1),
     systemHasShip(Ship1, PieceWithShip1),
     getPiece(Y1, X1, Board, PieceWithShip1),
 
-    write(X), write(Y), nl,
-
     moveNCellsInDirection(X1, Y1, Direction1, 1, Xf1, Yf1),
-    write(Xf1), write(Yf1), write(Direction1), nl,
     getPiece(Yf1, Xf1, Board, AdjPiece1),
-    write('1 - Adjac->'), write(AdjPiece1),
-    checkValidLandingCell(AdjPiece1),
-    write('2'))
+    checkValidLandingCell(AdjPiece1))
     
     ,
     
@@ -622,10 +616,7 @@ continueGame(Board):-
     systemHasShip(Ship2, PieceWithShip2),
     getPiece(Y2, X2, Board, PieceWithShip2),
 
-    write(X2), write(Y2), nl,
-
     moveNCellsInDirection(X2, Y2, Direction2, 1, Xf2, Yf2),
-    write(Xf2), write(Yf2), write(Direction2), nl,
     getPiece(Yf2, Xf2, Board, AdjPiece2),
     checkValidLandingCell(AdjPiece2)).
 
