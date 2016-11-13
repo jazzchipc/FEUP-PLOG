@@ -60,7 +60,7 @@ takeWormholesOut(_, [], [], TempX, TempY, ListX, ListY):-
     ListY = TempY.
 takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
     getPiece(Y, X, Board, Piece),
-    isWormhole(Piece),
+    (isWormhole(Piece); isSystemOwned(Piece)),
     takeWormholesOut(Board, Xs, Ys, TempX, TempY, ListX, ListY).
 takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
     takeWormholesOut(Board, Xs, Ys, [X|TempX], [Y|TempY], ListX, ListY).
@@ -737,37 +737,30 @@ getBestCellToMoveTo(Board):-
     length(Board, NumOfRows),
     restrictValidCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
 
-searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY, MaxPossibleScore):-
+searchMaxScore(_, [], [], _, CellToPlayX, CellToPlayY):-
+    write(CellToPlayX), nl,
+    write(CellToPlayY), nl,
+    write(MaxPossibleScore), nl.
+searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY):-
     getScoreFromAdjacentsToCell(player2, Board, X, Y, AdjacentScore),
 
     getPiece(Y, X, Board, Piece),
     getScoreFromStarSystemPiece(Piece, CellScore),
-    TotalScore = AdjacentScore + CellScore,
-    TotalScore > MaxScore,
-        MaxScore = TotalScore,
-        CellToPlayX = X,
-        CellToPlayY = Y,
-        searchMaxScore(Xs, Ys, MaxScore, CellToPlayX, CellToPlayY);
-    searchMaxScore(Xs, Ys, MaxScore, CellToPlayX, CellToPlayY).
-
-
-
-calculateBestMove(Board, ListX, ListY):-
-    %getBestCellToMoveTo(Board).
-    searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY, MaxPossibleScore).
-
+    TotalScore is AdjacentScore + CellScore,
+    TotalScore > CurrentMaxScore,
+        searchMaxScore(Board, Xs, Ys, TotalScore, X, Y);
+    searchMaxScore(Board, Xs, Ys, CurrentMaxScore, CellToPlayX, CellToPlayY).
 
 % Does AI turn
 playerTurn(Board, ai, UpdatedBoard):-
     %write('*************** AI turn ***************'), nl, nl,
-    %display_board(Board), nl, nl,
     %moveNCellsInDirection(PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, DestinationColumn, DestinationRow),
 
     getAllPossibleCellsToMove(Board, 1, 5, ListX, ListY),
-    writeXY(ListX, ListY),
-    %calculateBestMove(Board, ListX, ListY),
+    searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY),
 
-    %calculateBestMove(ListX, ListY),
+
+
     UpdatedBoard = Board.
     %clearScreen(60).
 
