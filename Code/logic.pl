@@ -43,28 +43,35 @@ none - none
 /* Element example: [<type of system>, <owner>, <list of ships>, <constructions>] */
 
 initial_logic_board([
-    [[star2, player2, [], colony], [star2, free, [], none], [wormhole]],
-    [[star1, player1, [shipAdamaged], colony], [star2, free, [], none], [star2, free, [], none]],
-    [[home, player1, [], none], [star2, free, [], none], [emptyS, free, [], none]],
-    [[star3, player2, [], trade], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
+    [[star2, free, [], none], [star2, free, [], none], [wormhole]],
+    [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
+    [[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [blackhole], [emptyS, free, [], none]],
+    [[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]],
     [[blackhole], [wormhole], [blackhole]],
     [[star3, free, [], none], [nebula, free, [], none], [star1, free, [], none]],
     [[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]]
     ]
     ).
 
+min_board([
+[[star1, free, [], none], [star2, free, [], none], [star2, free, [], none]],
+[[home, player1, [shipAdamaged, shipBdamaged, shipCdamaged, shipDdamaged], none], [star1, free, [], none], [emptyS, free, [], none]],
+[[star3, free, [], none], [nebula, free, [], none], [home, player2, [shipWdamaged, shipXdamaged, shipYdamaged, shipZdamaged], none]]
+]
+).
+
 /*** GET INFORMATION FROM CELLS ***/
 
 canFlyOver(Board, X, Y):-
     getPiece(Y, X, Board, Piece),
-    isBlackhole(Piece).
+    (isBlackhole(Piece); systemBelongsToPlayer(player1, Piece)).
 
 takeWormholesOut(_, [], [], TempX, TempY, ListX, ListY):-
     ListX = TempX,
     ListY = TempY.
 takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
     getPiece(Y, X, Board, Piece),
-    (isWormhole(Piece); isSystemOwned(Piece)),
+    (isWormhole(Piece); systemBelongsToPlayer(player1, Piece); systemBelongsToPlayer(player2, Piece)),
     takeWormholesOut(Board, Xs, Ys, TempX, TempY, ListX, ListY).
 takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
     takeWormholesOut(Board, Xs, Ys, [X|TempX], [Y|TempY], ListX, ListY).
@@ -75,11 +82,13 @@ takeWormholesOut(Board, [X|Xs], [Y|Ys], TempX, TempY, ListX, ListY):-
 isStarSystem1([star1, _ , _, _]).
 isStarSystem2([star2, _ , _, _]).
 isStarSystem3([star3, _ , _, _]).
+isStarSystemEmpty([emptyS, _ , _, _]).
 
 isStarSystem(X):-
     isStarSystem1(X);
     isStarSystem2(X);
-    isStarSystem3(X).
+    isStarSystem3(X);
+    isStarSystemEmpty(X).
 
 isEmptySystem([emptyS, _ , _, _]).
 
@@ -355,9 +364,7 @@ getAllPossibleCellsToMove(Board, X, Y, ListX, ListY):-
     append(Y3, BottomLeftY, Y4),
     append(Y4, BottomRightY, Y5),
 
-    writeXY(X5, Y5),
-    takeWormholesOut(Board, X5, Y5, [], [], ListX, ListY),
-    writeXY(ListX, ListY).
+    takeWormholesOut(Board, X5, Y5, [], [], ListX, ListY).
 
 % Returns Piece on Row and Column
 getPiece(Row, Column, Board, Piece):-
@@ -443,7 +450,8 @@ getBoardPiece(Board, Piece, X, Y):-
 starSystemScore(StarSystem, Score):-
     (isStarSystem1(StarSystem), Score is 1);
     (isStarSystem2(StarSystem), Score is 2);
-    (isStarSystem3(StarSystem), Score is 3).
+    (isStarSystem3(StarSystem), Score is 3);
+    (isStarSystemEmpty(StarSystem), Score is 0).
 
 getScoreFromStarSystemPiece(Piece, Score):-
     isStarSystem(Piece), starSystemScore(Piece, Score).
@@ -658,7 +666,7 @@ endGame(Board):-
     getPiece(Yf1, Xf1, Board, AdjPiece1),
     checkValidLandingCell(AdjPiece1))
     
-    ,
+  ;
     
     % verify player 2 ships
     (player2Ship(Ship2), 
@@ -727,8 +735,8 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     systemHasShip(ShipToMove, PieceToMove),
     getPiece(PieceToMoveRow, PieceToMoveColumn, Board, PieceToMove),
 
-    !,
-    repeat,
+    /*!,
+    repeat,*/
     
     write('Select direction to travel'), nl,
     read(Direction), nl,
@@ -790,38 +798,43 @@ getBestCellToMoveTo(Board):-
     restrictValidCells(Board, NumOfRows, AdjacentListY, AdjacentListX, [], [], ValidListY, ValidListX).
 
 % Returns the X and Y of the cell that gives more score to the AI
-searchMaxScore(Board, [], [], _, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-
-    write(CellToPlayX), nl, write(CellToPlayY), nl,
+searchMaxScore(Board, [], [], _, Building, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-    
+    format('Im playing to X = ~d, Y = ~d~n', [CellToPlayX, CellToPlayY]),
     
     getPiece(OriginCellY, OriginCellX, Board, PieceToMove),
     getPiece(CellToPlayY, CellToPlayX, Board, DestinationPiece),
 
-    write(PieceToMove), nl,
-    write(DestinationPiece), nl,
+    /*write(PieceToMove), nl,
+    write(DestinationPiece), nl,*/
 
     getShip(PieceToMove, Ships),
     getShipAux(Ships, IndividualShip),
-    write('Ship e: '),
-    write(IndividualShip),
+    /*write('Ship e: '),
+    write(IndividualShip),*/
 
-    setPieceToMove(PieceToMove, DestinationPiece, IndividualShip, colony, NewPiece, 0),
+    setPieceToMove(PieceToMove, DestinationPiece, IndividualShip, Building, NewPiece, 0),
     removeShipFromPiece(PieceToMove, IndividualShip, OldPiece),
 
     updateBoard(Board, OldPiece, NewPiece, PieceToMove, OriginCellY, OriginCellX, DestinationPiece, CellToPlayY, CellToPlayX, UpdatedBoard),
-    format('Played from X = ~d, Y = ~d to X = ~d, Y = ~d~n', [OriginCellX, OriginCellY, CellToPlayX, CellToPlayY]),
-    write('*************** AI turn End ***************'), nl, nl.
+    format('AI moved ship from X = ~d, Y = ~d to X = ~d, Y = ~d~n', [OriginCellX, OriginCellY, CellToPlayX, CellToPlayY]),
+    nl, write('*************** AI turn End ***************'), nl, nl.
 
-searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-
+searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, Building, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard):-
     getScoreFromAdjacentsToCell(player2, Board, X, Y, AdjacentScore),
     getPiece(Y, X, Board, Piece),
     getScoreFromStarSystemPiece(Piece, CellScore),
     TotalScore is AdjacentScore + CellScore,
     TotalScore > CurrentMaxScore,
-        searchMaxScore(Board, Xs, Ys, TotalScore, X, Y, OriginCellX, OriginCellY, UpdatedBoard);
-    searchMaxScore(Board, Xs, Ys, CurrentMaxScore, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
+        searchMaxScore(Board, Xs, Ys, TotalScore, colony, X, Y, OriginCellX, OriginCellY, UpdatedBoard);
+    searchMaxScore(Board, Xs, Ys, CurrentMaxScore, Building, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
 
 getAIShips(Board, X, Y):-
     player2Ship(Ship),
+    getBoardPieces(Board, PieceWithShip),
+    systemHasShip(Ship, PieceWithShip),
+    getPiece(Y, X, Board, PieceWithShip).
+getAI2Ships(Board, X, Y):-
+    player1Ship(Ship),
     getBoardPieces(Board, PieceWithShip),
     systemHasShip(Ship, PieceWithShip),
     getPiece(Y, X, Board, PieceWithShip).
@@ -836,19 +849,62 @@ getShipAux([X|Xs], X).
 % Does AI turn
 playerTurn(Board, ai, UpdatedBoard):-
     write('*************** AI turn ***************'), nl, nl,
+    display_board(Board),
 
     findall(X, getAIShips(Board, X, Y), PiecesWithShipPositionX),
     findall(Y, getAIShips(Board, X, Y), PiecesWithShipPositionY),
 
-    %writeXY(PiecesWithShipPositionX, PiecesWithShipPositionY),
+    !,
+    repeat,
     random(0, 4, PieceDecider),
-    /*write('Este e o num = '),
-    write(PieceDecider), nl,*/
     chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
 
     getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
     writeXY(ListX, ListY),
-    searchMaxScore(Board, ListX, ListY, 0, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
+
+    length(ListX, NumOfCellsCanMove),
+    write('Este e o num = '),
+    write(PieceDecider), nl,
+    write('lalalalalalal:   '),
+    write(NumOfCellsCanMove), nl,
+    NumOfCellsCanMove > 0,
+        first(FirstX, ListX),
+        first(FirstY, ListY),
+        format('Starting with these values: X = ~d, Y = ~d~n', [FirstX, FirstY]),
+        searchMaxScore(Board, ListX, ListY, 0, colony, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
+    write('Failed, trying again'), nl,
+    fail.
+
+% Does AI turn
+playerTurn(Board, ai2, UpdatedBoard):-
+    write('*************** AI 2 turn ***************'), nl, nl,
+    display_board(Board),
+
+    findall(X, getAI2Ships(Board, X, Y), PiecesWithShipPositionX),
+    findall(Y, getAI2Ships(Board, X, Y), PiecesWithShipPositionY),
+
+    !,
+    repeat,
+    random(0, 4, PieceDecider),
+    chooseShipToMove(PieceDecider, PiecesWithShipPositionX, PiecesWithShipPositionY, OriginCellX, OriginCellY),
+
+    getAllPossibleCellsToMove(Board, OriginCellX, OriginCellY, ListX, ListY),
+    writeXY(ListX, ListY),
+
+    length(ListX, NumOfCellsCanMove),
+    write('Este e o num = '),
+    write(PieceDecider), nl,
+    write('lalalalalalal:   '),
+    write(NumOfCellsCanMove), nl,
+    NumOfCellsCanMove > 0,
+        first(FirstX, ListX),
+        first(FirstY, ListY),
+        format('Starting with these values: X = ~d, Y = ~d~n', [FirstX, FirstY]),
+        searchMaxScore(Board, ListX, ListY, 0, colony, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
+    write('Failed, trying again'), nl,
+    fail.
+
+
 
 % Does player turn
 playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
@@ -878,6 +934,5 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
 numOfBuildings(player1, trade, 0).
 numOfBuildings(player2, trade, 0).
 
-numOfBuildings(player1, colony, 0).
-numOfBuildings(player2, colony, 1).
-
+numOfBuildings(player1, colony, 20).
+numOfBuildings(player2, colony, 20).

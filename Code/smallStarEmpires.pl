@@ -38,12 +38,14 @@ playGameMode(playerVSplayer):-
         .
 
 playGameMode(playerVSai):-
-        initial_logic_board(Board),
-        playPlayerAI(Board, ai).
+        write('********************* THE BATTLE IS ON! *********************'), nl, nl,
+        min_board(Board),
+        \+(playPlayerAI(Board, ai)).
 
 playGameMode(aiVSai):-
+        write('********************* THE BATTLE IS ON! *********************'), nl, nl,
         initial_logic_board(Board),
-        playGame(Board, 2).
+        playAIAI(Board, 2).
 
 playPlayerPlayer(Board, WhoIsPlaying):-
         (\+endGame(Board) ;
@@ -65,12 +67,39 @@ playPlayerPlayer(Board, WhoIsPlaying):-
         playPlayerPlayer(UpdatedBoard, 1)).
 
 playPlayerAI(Board, WhoIsPlaying):-
-        WhoIsPlaying == 1,
+        (\+endGame(Board) ;
+        (getTotalScoreOfPlayer(player1, Board, TotalScore1),
+         format('Player 1 has a score of ~d points.~n', [TotalScore1]),
+        
+        getTotalScoreOfPlayer(player2, Board, TotalScore2),
+        format('AI has a score of ~d points.~n', [TotalScore2]),
+        
+        fail)),
+        
+        (WhoIsPlaying == 1,
         playerTurn(Board, 1, UpdatedBoard),
         !,
         playPlayerAI(UpdatedBoard, ai);
         
         playerTurn(Board, ai, UpdatedBoard),
         !,
-        playPlayerAI(UpdatedBoard, 1).
+        playPlayerAI(UpdatedBoard, 1)).
 
+playAIAI(Board, WhoIsPlaying):-
+        (\+endGame(Board) ;
+        (getTotalScoreOfPlayer(player1, Board, TotalScore1),
+         format('Player 1 has a score of ~d points.~n', [TotalScore1]),
+        
+        getTotalScoreOfPlayer(player2, Board, TotalScore2),
+        format('Player 2 has a score of ~d points.~n', [TotalScore2]),
+        
+        fail)),
+
+        (WhoIsPlaying == ai,
+        playerTurn(Board, ai, UpdatedBoard),
+        !,
+        playAIAI(UpdatedBoard, ai2);
+
+        playerTurn(Board, ai2, UpdatedBoard),
+        !,
+        playAIAI(UpdatedBoard, ai)).
