@@ -1,6 +1,37 @@
 :- use_module(library(random)).
 :- include('logic.pl').
 
+/**** Trade station and Colony counter ****/
+
+:- dynamic numOfBuildings/3.
+
+numOfBuildings(player1, trade, 5).
+numOfBuildings(player2, trade, 5).
+
+numOfBuildings(player1, colony, 10).
+numOfBuildings(player2, colony, 10).
+
+setBuildingsForEachPlayer(NumOfTrades, NumOfColonies):-
+
+        numOfBuildings(player1, trade, OldNumOfTrades1),
+        assert(numOfBuildings(player1, trade, NumOfTrades)),
+        retract(numOfBuildings(player1, trade, OldNumOfTrades1)),
+
+        numOfBuildings(player2, trade, OldNumOfTrades2),
+        assert(numOfBuildings(player2, trade, NumOfTrades)),
+        retract(numOfBuildings(player2, trade, OldNumOfTrades2)),
+
+        numOfBuildings(player1, colony, OldNumOfColonies1),
+        assert(numOfBuildings(player1, colony, NumOfColonies)),
+        retract(numOfBuildings(player1, colony, OldNumOfColonies1)),
+        
+        numOfBuildings(player2, colony, OldNumOfColonies2),
+        assert(numOfBuildings(player2, colony, NumOfColonies)),
+        retract(numOfBuildings(player2, colony, OldNumOfColonies2)).
+
+       
+        
+
 assignGameMode(1, playerVSplayer).
 assignGameMode(2, playerVSai).
 assignGameMode(3, aiVSai).
@@ -27,8 +58,9 @@ askForYoungestPlayer(YoungestPlayer):-
         read(YoungestPlayer), nl, nl.
 
 startGame:- 
-    displayMenu(GameMode),
-    playGameMode(GameMode).
+        setBuildingsForEachPlayer(5, 10),
+        displayMenu(GameMode),
+        playGameMode(GameMode).
 
 playGameMode(playerVSplayer):-
         askForYoungestPlayer(YoungestPlayer),

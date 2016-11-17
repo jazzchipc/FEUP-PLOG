@@ -5,8 +5,6 @@
 :- include('board.pl').
 :- include('utils.pl').
 
-:- dynamic numOfBuildings/3.
-
 /*** LOGICAL ARRAY KEYWORDS ***/
 
 /*** TYPES OF SYSTEMS 
@@ -622,14 +620,14 @@ verifyValidDirectionEvenRow(Xi, Yi, Xf, Yf):-
 
 % Verify is PATH is unobstructed (does NOT include final destination -> checked in checkValidLandingCell)
 
-unobstructedPath(Board, Player, Xi, Yi, Direction, 1, Xf, Yf).
+unobstructedPath(Board, Player, Xi, Yi, Direction, 1).
 
-unobstructedPath(Board, Player, Xi, Yi, Direction, NumberOfCells, Xf, Yf):-
+unobstructedPath(Board, Player, Xi, Yi, Direction, NumberOfCells):-
     N is NumberOfCells - 1,
     moveNCellsInDirection(Xi, Yi, Direction, N, Xf, Yf),
     getPiece(Yf, Xf, Board, DestinationPiece),
-    (checkValidLandingCell(DestinationPiece) ; systemBelongsToPlayer(Player, DestinationPiece)),
-    unobstructedPath(Board, Player, Xi, Yi, Direction, N, Xf, Yf).
+    (checkValidLandingCell(DestinationPiece) ; systemBelongsToPlayer(Player, DestinationPiece) ; isWormhole(DestinationPiece)),
+    unobstructedPath(Board, Player, Xi, Yi, Direction, N).
 
 
 
@@ -644,7 +642,7 @@ endGame(Board):-
     getPiece(Y1, X1, Board, PieceWithShip1),
 
     % if he can fly over adjacent houses
-    unobstructedPath(Board, player1, X1, Y1, Direction1, 2, Xu1, Yu1),
+    unobstructedPath(Board, player1, X1, Y1, Direction1, 2),
     moveNCellsInDirection(X1, Y1, Direction1, 2, Xf1, Yf1),
     getPiece(Yf1, Xf1, Board, AdjPiece1),
     checkValidLandingCell(AdjPiece1))
@@ -657,7 +655,7 @@ endGame(Board):-
     systemHasShip(Ship2, PieceWithShip2),
     getPiece(Y2, X2, Board, PieceWithShip2),
 
-    unobstructedPath(Board, player2, X2, Y2, Direction2, 2, Xu2, Yu2),
+    unobstructedPath(Board, player2, X2, Y2, Direction2, 2),
     moveNCellsInDirection(X2, Y2, Direction2, 2, Xf2, Yf2),
     getPiece(Yf2, Xf2, Board, AdjPiece2),
     checkValidLandingCell(AdjPiece2)))
@@ -744,7 +742,7 @@ readPlayerInput(Board, WhoIsPlaying, OldPiece, NewPiece, PieceToMove, PieceToMov
     ((WhoIsPlaying =:= 1, MyPlayer = player1) ; (WhoIsPlaying =:= 2, MyPlayer = player2)),
 
     % check if path is uninterrupted
-    (unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells, Trash1, Trash2)
+    (unobstructedPath(Board, MyPlayer, PieceToMoveColumn, PieceToMoveRow, Direction, NumOfCells)
     ;
     (write('This path you shall not take, for great dangers reside in it.'), nl, write(PieceToMoveColumn), nl, write(PieceToMoveRow), nl, write(Direction), nl, write(NumOfCells), nl, write(DestinationColumn), nl, write(DestinationRow), fail)),
 
@@ -902,11 +900,3 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
     updateBoard(Board, OldPiece, NewPiece, PieceToMove, PieceToMoveRow, PieceToMoveColumn, DestinationPiece, DestinationRow, DestinationColumn, UpdatedBoard))),
    
     clearScreen(60).
-
-/**** Trade station and Colony counter ****/
-
-numOfBuildings(player1, trade, 5).
-numOfBuildings(player2, trade, 5).
-
-numOfBuildings(player1, colony, 10).
-numOfBuildings(player2, colony, 10).
