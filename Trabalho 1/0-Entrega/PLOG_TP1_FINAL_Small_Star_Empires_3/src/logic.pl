@@ -811,7 +811,7 @@ searchMaxScore(Board, [X|Xs], [Y|Ys], CurrentMaxScore, Building, CellToPlayX, Ce
     getScoreFromStarSystemPiece(Piece, CellScore),
     TotalScore is AdjacentScore + CellScore,
     TotalScore > CurrentMaxScore,
-        searchMaxScore(Board, Xs, Ys, TotalScore, colony, X, Y, OriginCellX, OriginCellY, UpdatedBoard);
+        searchMaxScore(Board, Xs, Ys, TotalScore, trade, X, Y, OriginCellX, OriginCellY, UpdatedBoard);
     searchMaxScore(Board, Xs, Ys, CurrentMaxScore, Building, CellToPlayX, CellToPlayY, OriginCellX, OriginCellY, UpdatedBoard).
 
 getAIShips(Board, X, Y):-
@@ -852,7 +852,7 @@ playerTurn(Board, ai, UpdatedBoard):-
     NumOfCellsCanMove > 0,
         first(FirstX, ListX),
         first(FirstY, ListY),
-        searchMaxScore(Board, ListX, ListY, 0, trade, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
+        searchMaxScore(Board, ListX, ListY, 0, colony, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
     write('Failed, trying again'), nl,
     fail.
 
@@ -876,7 +876,7 @@ playerTurn(Board, ai2, UpdatedBoard):-
     NumOfCellsCanMove > 0,
         first(FirstX, ListX),
         first(FirstY, ListY),
-        searchMaxScore(Board, ListX, ListY, 0, trade, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
+        searchMaxScore(Board, ListX, ListY, 0, colony, FirstX, FirstY, OriginCellX, OriginCellY, UpdatedBoard);
     write('Failed, trying again'), nl,
     fail.
 
@@ -905,8 +905,8 @@ playerTurn(Board, WhoIsPlaying, UpdatedBoard):-
 
 /**** Trade station and Colony counter ****/
 
-numOfBuildings(player1, trade, 20).
-numOfBuildings(player2, trade, 20).
+numOfBuildings(player1, trade, 5).
+numOfBuildings(player2, trade, 5).
 
-numOfBuildings(player1, colony, 20).
-numOfBuildings(player2, colony, 20).
+numOfBuildings(player1, colony, 10).
+numOfBuildings(player2, colony, 10).

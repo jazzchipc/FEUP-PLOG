@@ -49,6 +49,9 @@ playGameMode(aiVSai):-
 
 playPlayerPlayer(Board, WhoIsPlaying):-
         (\+endGame(Board) ;
+
+        display_board(Board), nl,
+
         (getTotalScoreOfPlayer(player1, Board, TotalScore1),
          format('Player 1 has a score of ~d points.~n', [TotalScore1]),
         
@@ -77,7 +80,9 @@ playPlayerPlayer(Board, WhoIsPlaying):-
 
 playPlayerAI(Board, WhoIsPlaying):-
         (\+endGame(Board) ;
-        display_board(Board),
+
+        display_board(Board), nl,
+
         (getTotalScoreOfPlayer(player1, Board, TotalScore1),
          format('Player 1 has a score of ~d points.~n', [TotalScore1]),
         
@@ -106,7 +111,9 @@ playPlayerAI(Board, WhoIsPlaying):-
 
 playAIAI(Board, WhoIsPlaying):-
         (\+endGame(Board) ;
-        display_board(Board),
+
+        display_board(Board), nl,
+
         (getTotalScoreOfPlayer(player1, Board, TotalScore1),
          format('Player 1 has a score of ~d points.~n', [TotalScore1]),
         
