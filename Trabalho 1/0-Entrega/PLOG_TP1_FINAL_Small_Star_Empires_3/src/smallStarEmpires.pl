@@ -64,7 +64,7 @@ playPlayerPlayer(Board, WhoIsPlaying):-
         (TotalScore1 =:= TotalScore2,
         write('***** DRAW *****'))),
         
-        fail)),
+        !, fail)),
 
         (WhoIsPlaying == 1,
         playerTurn(Board, 1, UpdatedBoard),
@@ -93,7 +93,7 @@ playPlayerAI(Board, WhoIsPlaying):-
         (TotalScore1 =:= TotalScore2,
         write('***** DRAW *****'))),
 
-        fail)),
+        !, fail)),
         
         (WhoIsPlaying == 1,
         playerTurn(Board, 1, UpdatedBoard),
@@ -122,7 +122,7 @@ playAIAI(Board, WhoIsPlaying):-
         (TotalScore1 =:= TotalScore2,
         write('***** DRAW *****'))),
 
-        fail)),
+        !, fail)),
 
         (WhoIsPlaying == ai,
         playerTurn(Board, ai, UpdatedBoard),
