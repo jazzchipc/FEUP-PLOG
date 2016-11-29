@@ -12,7 +12,6 @@ make_rows(M, N, Board):-
     M1 is M-1,
     make_rows(M1, N, Board).
 
-
 make_board(NumOfRows, NumOfCols, Board):-
     length(Board, NumOfRows),      
     make_rows(NumOfRows, NumOfCols, Board).
@@ -36,11 +35,20 @@ set_square_constraint(Board):-  %   no 2x2 group can have cells of a single colo
     get_cell(Board, X, Y, Cell).
 
 
-yin_yang(Board):-
-    make_board(4, 4, Board),
-    set_domain(Board),
+yin_yang(Board, N):-
+    /*Area is N * N,
+    length(Board, Area),*/
+    Board = [
+        A1, A2, A3, A4,
+        B1, B2, B3, B4,
+        C1, C2, C3, C4,
+        D1, D2, D3, D4
+    ];
+    domain(Board, 1, 2),
+    constrain(Board, 0, Board),
 
-    set_constraints(Board),
-
-    get_row(Board, X, Row),
     labeling([], Row).    % 0 is white, 1 is black
+
+
+constrain([X|Xs], Index, L):-
+    element(Index, L, NewX),
