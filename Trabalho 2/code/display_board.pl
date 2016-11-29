@@ -3,8 +3,8 @@
 %%% TRANSLATIONS
 
 translate(0, ' ').
-translate(1, '#').
-translate(2, 'O').
+translate(1, 'O').
+translate(2, '#').
 
 %%% DISPLAY LINE SEPARATOR 
 
