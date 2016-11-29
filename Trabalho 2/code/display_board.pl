@@ -2,8 +2,9 @@
 
 %%% TRANSLATIONS
 
-translate(0, '###').
-translate(1, '   ').
+translate(0, ' ').
+translate(1, '#').
+translate(2, 'O').
 
 %%% DISPLAY LINE SEPARATOR 
 
@@ -11,7 +12,7 @@ display_horizontal_separator(0):- write(+), nl.
 
 display_horizontal_separator(NumOfCols):-
     write(+),
-    write(---),
+    write(-),
     NumOfCols1 is NumOfCols - 1,
     display_horizontal_separator(NumOfCols1).
 
@@ -65,7 +66,7 @@ display_board(Board):-
 
 board(B):-
     B = [
-        [0, 0, 1],
-        [0, 1, 1],
-        [0, 0, 1]
+        [2, 0, 1],
+        [2, 0, 1],
+        [0, 0, 0]
         ].
