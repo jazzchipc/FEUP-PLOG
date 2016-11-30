@@ -2,6 +2,8 @@
 :- use_module(library(clpfd)).
 :- include('display_board.pl').
 
+%% NÃO É NECESSÁRIO UMA INTERFACE COM O UTILIZADOR %%
+
 %% UTILITIES %%
 
 make_rows(1, N, Board):- 
@@ -50,40 +52,28 @@ set_domain(Board):-
 set_constraints_in_cell(Board, X, Y):-
     get_cell(Board, X, Y, CurrentCell),
 
-    Xright is X+1, Xleft is X-1,
-    Ybottom is Y+1, Ytop is Y-1,
+    Xright is X+1,
+    Ybottom is Y+1,
 
     %% direct contact cells
     get_cell(Board, Xright, Y, CellRight),
-    get_cell(Board, Xleft, Y, CellLeft),
-    get_cell(Board, X, Ytop, CellTop),
     get_cell(Board, X, Ybottom, CellBottom),
 
     %% diagonal cells
-    get_cell(Board, Xright, Ytop, NE),
-    get_cell(Board, Xleft, Ytop, NW),
-    get_cell(Board, Xright, Ybottom, SE),
-    get_cell(Board, Xleft, Ybottom, SW),
+    get_cell(Board, Xright, Ybottom, CellSE),
 
     %% one direct contact cell must be the same color
 
-    (CurrentCell #= CellRight #\/ CurrentCell #= CellLeft #\/ CurrentCell #= CellTop #\/ CurrentCell #= CellBottom),
-
-    %% no 2x2 can be the same color
-
-    %top left square
-    ((CurrentCell #\= CellLeft #\/ CurrentCell #\= CellTop #\/ CurrentCell #\= NW) #\/
-    %top right
-    (CurrentCell #\= CellRight #\/ CurrentCell #\= CellTop #\/ CurrentCell #\= NE) #\/
-    %bottom left
-    (CurrentCell #\= CellLeft #\/ CurrentCell #\= CellBottom #\/ CurrentCell #\= SW) #\/
-    %bottom right
-    (CurrentCell #\= CellRight #\/ CurrentCell #\= CellBottom #\/ CurrentCell #\= SE)).
+    (
+        (nvalue(1, [CurrentCell, CellRight]) #\/ nvalue(1, [CurrentCell, CellBottom])) % must be connected to one cell of the same color
+        #/\ 
+        (nvalue(2, [CurrentCell, CellLeft, CellRight, CellSE]))  % no 2x2 can have a single color
+    ).  
 
 
 %% set constraints to all row elements
-set_board_constraints_row_aux(Board, RowY, 1):-
-    set_board_constraints_row_aux(Board, RowY, 1).
+set_board_constraints_row_aux(Board, RowY, 2):- % 2 instead of 1 so it doesn't apply to the last column
+    set_board_constraints_row_aux(Board, RowY, 2).
 
 set_board_constraints_row_aux(Board, RowY, ElementX):-
     set_constraints_in_cell(Board, ElementX, RowY),
@@ -93,9 +83,9 @@ set_board_constraints_row_aux(Board, RowY, ElementX):-
 
 %% set constraints to all rows
 
-set_board_constraints_aux(Board, 1):-
+set_board_constraints_aux(Board, 2):-   % 2 instead of 1 so it doesn't appply to last row
     length(Board, XElements),
-    set_board_constraints_row_aux(Board, RowY, XElements).
+    set_board_constraints_row_aux(Board, 2, XElements).
 
 set_board_constraints_aux(Board, RowY):-
     length(Board, XElements),
@@ -110,16 +100,13 @@ set_board_constraints(Board):-
  
 %% find solutions
 
-yin_yang(Board):-
+yin_yang(Board, N):-
 
-    make_board(4, 4, Board),
+    make_board(N, N, Board),
 
     set_domain(Board),
     
-    set_constraints_in_cell(Board, 2, 2),
-    set_constraints_in_cell(Board, 3, 2),
-    set_constraints_in_cell(Board, 2, 3),
-    set_constraints_in_cell(Board, 3, 3),
+    set_board_constraints(Board),
 
     append(Board, ListOfVars),
 
@@ -128,5 +115,5 @@ yin_yang(Board):-
 %% display
 
 display:-
-    yin_yang(Board),
+    yin_yang(Board, 4),
     display_board(Board).
