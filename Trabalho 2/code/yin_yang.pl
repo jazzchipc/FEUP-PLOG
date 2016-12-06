@@ -10,14 +10,14 @@ LastEvaluatorNumber --> last column of penultima line
 
 test_board_4x4([
     A1, A2, A3, A4,
-    B1, B2, B3, B4,
-    C1, C2, C3, C4,
+    B1, 1, 1, B4,
+    C1, C2, 0, C4,
     D1, D2, D3, D4
 ]).
 
 test_board_3x3([
     A1, A2, A3,
-    B1, B2, B3,
+    B1, 1, B3,
     C1, C2, C3
 ]).
 
@@ -26,9 +26,8 @@ test_board_2x2([
     B1, B2
 ]).
 
-solve(Board):-
+yin_yang(Board):-
     test_board_4x4(Board),
-
     length(Board, Length),
     LengthRowAux is sqrt(Length),
     LengthRow is round(LengthRowAux),
@@ -36,7 +35,7 @@ solve(Board):-
     domain(Board, 0, 1),
     setConstrains(Board, 1, Length, LengthRow),
     labeling([], Board),
-    
+
     display_board(Board, LengthRow, 1).
 
 setConstrains(Board, Index, Length, LengthRow):-
@@ -56,7 +55,11 @@ setConstrains(Board, Index, Length, LengthRow):-
     NextRowPlus is NextRow + 1,
     element(NextRowPlus, Board, ElemSE),
     
-    (CurrElem #= ElemRight #\/ CurrElem #= ElemBelow #\/ (CurrElem #\= ElemRight #/\ CurrElem #\= ElemBelow)),
+    (
+        CurrElem #= ElemRight
+        #\/ CurrElem #= ElemBelow
+        %#\/ (CurrElem #\= ElemSE #/\ ElemRight #/\ ElemSE #/\ ElemBelow #\= ElemSE)
+    ),
     nvalue(2, [CurrElem, ElemRight, ElemBelow, ElemSE]),
 
     NewIndex is Index + 1,
