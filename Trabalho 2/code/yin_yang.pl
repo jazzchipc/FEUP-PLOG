@@ -35,11 +35,8 @@ setConstrains(Board, Index):-
     NextRowPlus is NextRow + 1,
     element(NextRowPlus, Board, ElemSE),
     
-    (
-        (nvalue(1, [CurrElem, ElemRight]) #\/ nvalue(1, [CurrElem, ElemBelow]))
-        #/\
-        (nvalue(2, [CurrElem, ElemRight, ElemBelow, ElemSE]))
-    ),
+    (CurrElem #= ElemRight #\/ CurrElem #= ElemBelow #\/ (CurrElem #\= ElemRight #/\ CurrElem #\= ElemBelow)),
+    nvalue(2, [CurrElem, ElemRight, ElemBelow, ElemSE]),
 
     NewIndex is Index + 1,
     setConstrains(Board, NewIndex).
