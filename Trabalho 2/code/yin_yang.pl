@@ -26,7 +26,7 @@ test_board_2x2([
     B1, B2
 ]).
 
-yin_yang(Board):-
+yin_yang_auto(Board):-
     test_board_4x4(Board),
     length(Board, Length),
     LengthRowAux is sqrt(Length),
@@ -38,10 +38,37 @@ yin_yang(Board):-
 
     display_board(Board, LengthRow, 1).
 
+yin_yang_manual(Board, Length):-
+    length(Board, Length),
+    LengthRowAux is sqrt(Length),
+    LengthRow is round(LengthRowAux),
+    
+    domain(Board, 0, 1),
+    setConstrains(Board, 1, Length, LengthRow),
+    labeling([], Board),
+
+    display_board(Board, LengthRow, 1).
+
+setConstrains(Board, LengthRow, Length, LengthRow):-
+    NewIndex is LengthRow + 1,
+    setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
-    Aux is Length - LengthRow,
-    LastEvaluatorNumber is Aux - 1,
-    Index =:= LastEvaluatorNumber.
+    LastEvaluatorNumber is Length - LengthRow,
+    Index =:= LastEvaluatorNumber,
+    NewIndex is Index + 1,
+
+    UpperIndex is Index - LengthRow,
+    BelowIndex is Index + LengthRow,
+
+    element(Index, Board, CurrElem),
+    element(UpperIndex, Board, UpperElem),
+    element(BelowIndex, Board, BelowElem),
+
+    (
+        CurrElem #= UpperElem
+        #\/ CurrElem #= BelowElem
+    ),
+    setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
     0 =:= mod(Index, LengthRow),
     NewIndex is Index + 1,
@@ -60,6 +87,7 @@ setConstrains(Board, Index, Length, LengthRow):-
         #\/ CurrElem #= ElemBelow
         %#\/ (CurrElem #\= ElemSE #/\ ElemRight #/\ ElemSE #/\ ElemBelow #\= ElemSE)
     ),
+
     nvalue(2, [CurrElem, ElemRight, ElemBelow, ElemSE]),
 
     NewIndex is Index + 1,
