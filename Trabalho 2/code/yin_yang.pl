@@ -20,8 +20,10 @@ test_board([
 ]).
 
 display(Board):-
-    test_board(Board),
+    initial_board(Board),
+
     length(Board, Length),
+    LengthRow is sqrt(Length),
     
     domain(Board, 0, 1),
 
@@ -30,7 +32,9 @@ display(Board):-
     labeling([], Board).
 
 setConstrains(Board, Index):-
-    Index =:= 6.
+    Aux is Length - LengthRow,
+    Aux2 is Aux - 1,
+    Index =:= Aux2.
 setConstrains(Board, Index):-
     0 =:= mod(Index, 3),
     NewIndex is Index + 1,
@@ -39,7 +43,7 @@ setConstrains(Board, Index):-
     element(Index, Board, CurrElem),
     NextIndex is Index + 1,
     element(NextIndex, Board, ElemRight),
-    NextRow is Index + 3,
+    NextRow is Index + LengthRow,
     element(NextRow, Board, ElemBelow),
     NextRowPlus is NextRow + 1,
     element(NextRowPlus, Board, ElemSE),
