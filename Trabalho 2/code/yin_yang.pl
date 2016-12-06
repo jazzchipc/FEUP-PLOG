@@ -4,6 +4,8 @@
 /*
 0 --> black
 1 --> white
+
+LastEvaluatorNumber --> last column of penultima line
 */
 
 initial_board([
@@ -19,27 +21,32 @@ test_board([
     C1, C2, C3
 ]).
 
-display(Board):-
+test_board_2([
+    A1, A2,
+    B1, B2
+]).
+
+solve(Board):-
     initial_board(Board),
 
     length(Board, Length),
-    LengthRow is sqrt(Length),
+    LengthRowAux is sqrt(Length),
+    LengthRow is round(LengthRowAux),
     
     domain(Board, 0, 1),
+    setConstrains(Board, 1, Length, LengthRow),
+    labeling([], Board),
+    display_board(Board, LengthRow, 1).
 
-    setConstrains(Board, 1),
-
-    labeling([], Board).
-
-setConstrains(Board, Index):-
+setConstrains(Board, Index, Length, LengthRow):-
     Aux is Length - LengthRow,
-    Aux2 is Aux - 1,
-    Index =:= Aux2.
-setConstrains(Board, Index):-
-    0 =:= mod(Index, 3),
+    LastEvaluatorNumber is Aux - 1,
+    Index =:= LastEvaluatorNumber.
+setConstrains(Board, Index, Length, LengthRow):-
+    0 =:= mod(Index, LengthRow),
     NewIndex is Index + 1,
-    setConstrains(Board, NewIndex).
-setConstrains(Board, Index):-
+    setConstrains(Board, NewIndex, Length, LengthRow).
+setConstrains(Board, Index, Length, LengthRow):-
     element(Index, Board, CurrElem),
     NextIndex is Index + 1,
     element(NextIndex, Board, ElemRight),
@@ -52,4 +59,15 @@ setConstrains(Board, Index):-
     nvalue(2, [CurrElem, ElemRight, ElemBelow, ElemSE]),
 
     NewIndex is Index + 1,
-    setConstrains(Board, NewIndex).
+    setConstrains(Board, NewIndex, Length, LengthRow).
+
+display_board([], _, _).
+display_board([X|Xs], LengthRow, Index):-
+    0 =:= mod(Index, LengthRow),
+    write(X), nl,
+    NewIndex is Index + 1,
+    display_board(Xs, LengthRow, NewIndex).
+display_board([X|Xs], LengthRow, Index):-
+    write(X), write(' '),
+    NewIndex is Index + 1,
+    display_board(Xs, LengthRow, NewIndex).
