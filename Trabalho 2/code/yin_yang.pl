@@ -49,12 +49,29 @@ yin_yang_manual(Board, Length):-
 
     display_board(Board, LengthRow, 1).
 
+setConstrains(Board, Index, Length, LengthRow):-
+    % cell that ends predicate. Penultima line and last column
+    LastEvaluatorNumber is Length - LengthRow,
+    Index =:= LastEvaluatorNumber,
+
+    UpperIndex is Index - LengthRow,
+    BelowIndex is Index + LengthRow,
+
+    element(Index, Board, CurrElem),
+    element(UpperIndex, Board, UpperElem),
+    element(BelowIndex, Board, BelowElem),
+
+    (
+        CurrElem #= UpperElem
+        #\/ CurrElem #= BelowElem
+    ).
 setConstrains(Board, LengthRow, Length, LengthRow):-
+    % cell that appears in the first line, last column
     NewIndex is LengthRow + 1,
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
-    LastEvaluatorNumber is Length - LengthRow,
-    Index =:= LastEvaluatorNumber,
+    % cells between first and last line in the last column
+    0 =:= mod(Index, LengthRow),
     NewIndex is Index + 1,
 
     UpperIndex is Index - LengthRow,
@@ -70,10 +87,7 @@ setConstrains(Board, Index, Length, LengthRow):-
     ),
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
-    0 =:= mod(Index, LengthRow),
-    NewIndex is Index + 1,
-    setConstrains(Board, NewIndex, Length, LengthRow).
-setConstrains(Board, Index, Length, LengthRow):-
+    % intermediate board cells
     element(Index, Board, CurrElem),
     NextIndex is Index + 1,
     element(NextIndex, Board, ElemRight),
@@ -85,7 +99,6 @@ setConstrains(Board, Index, Length, LengthRow):-
     (
         CurrElem #= ElemRight
         #\/ CurrElem #= ElemBelow
-        %#\/ (CurrElem #\= ElemSE #/\ ElemRight #/\ ElemSE #/\ ElemBelow #\= ElemSE)
     ),
 
     nvalue(2, [CurrElem, ElemRight, ElemBelow, ElemSE]),
