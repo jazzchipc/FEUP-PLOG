@@ -10,14 +10,14 @@ LastEvaluatorNumber --> last column of penultima line
 
 test_board_4x4([
     A1, A2, A3, A4,
-    B1, 1, 1, B4,
-    C1, C2, 0, C4,
+    B1, B2, B3, B4,
+    C1, C2, C3, C4,
     D1, D2, D3, D4
 ]).
 
 test_board_3x3([
     A1, A2, A3,
-    B1, 1, B3,
+    B1, B2, B3,
     C1, C2, C3
 ]).
 
@@ -39,12 +39,14 @@ yin_yang_auto(Board):-
     display_board(Board, LengthRow, 1).
 
 yin_yang_manual(Board, Length):-
-    length(Board, Length),
-    LengthRowAux is sqrt(Length),
+    BoardLength is Length * Length,
+    
+    length(Board, BoardLength),
+    LengthRowAux is sqrt(BoardLength),
     LengthRow is round(LengthRowAux),
     
     domain(Board, 0, 1),
-    setConstrains(Board, 1, Length, LengthRow),
+    setConstrains(Board, 1, BoardLength, LengthRow),
     labeling([], Board),
 
     display_board(Board, LengthRow, 1).
@@ -52,10 +54,11 @@ yin_yang_manual(Board, Length):-
 % cell that ends predicate. Last cell in the board
 setConstrains(Board, Length, Length, LengthRow).
 setConstrains(Board, LengthRow, Length, LengthRow):-
-    % cell that appears in the first line, last column
+    % cell that appears in the first row, last column
     NewIndex is LengthRow + 1,
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
+    % cell that appears in the last row, first column
     LastRowFirstColumn is Length - LengthRow + 1,
     Index =:= LastRowFirstColumn,
     NewIndex is Index + 1,
