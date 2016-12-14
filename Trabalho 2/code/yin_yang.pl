@@ -40,7 +40,7 @@ yin_yang_auto(Board):-
 
 yin_yang_manual(Board, Length):-
     BoardLength is Length * Length,
-    
+
     length(Board, BoardLength),
     LengthRowAux is sqrt(BoardLength),
     LengthRow is round(LengthRowAux),
@@ -56,12 +56,36 @@ setConstrains(Board, Length, Length, LengthRow).
 setConstrains(Board, LengthRow, Length, LengthRow):-
     % cell that appears in the first row, last column
     NewIndex is LengthRow + 1,
+
+    LeftIndex is LengthRow - 1,
+    BelowIndex is LengthRow + LengthRow,
+
+    element(LengthRow, Board, CurrElem),
+    element(LeftIndex, Board, LeftElem),
+    element(BelowIndex, Board, BelowElem),
+
+    (
+        CurrElem #= LeftElem
+        #\/ CurrElem #= BelowElem
+    ),
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
     % cell that appears in the last row, first column
     LastRowFirstColumn is Length - LengthRow + 1,
     Index =:= LastRowFirstColumn,
     NewIndex is Index + 1,
+
+    UpperIndex is Index - LengthRow,
+    RightIndex is Index + 1,
+
+    element(Index, Board, CurrElem),
+    element(UpperIndex, Board, UpperElem),
+    element(RightIndex, Board, RightElem),
+
+    (
+        CurrElem #= UpperElem
+        #\/ CurrElem #= RightElem
+    ),
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
     % cells between first and last line in the last column (excluded)
