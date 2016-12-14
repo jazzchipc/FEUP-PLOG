@@ -49,28 +49,19 @@ yin_yang_manual(Board, Length):-
 
     display_board(Board, LengthRow, 1).
 
-setConstrains(Board, Index, Length, LengthRow):-
-    % cell that ends predicate. Penultima line and last column
-    LastEvaluatorNumber is Length - LengthRow,
-    Index =:= LastEvaluatorNumber,
-
-    UpperIndex is Index - LengthRow,
-    BelowIndex is Index + LengthRow,
-
-    element(Index, Board, CurrElem),
-    element(UpperIndex, Board, UpperElem),
-    element(BelowIndex, Board, BelowElem),
-
-    (
-        CurrElem #= UpperElem
-        #\/ CurrElem #= BelowElem
-    ).
+% cell that ends predicate. Last cell in the board
+setConstrains(Board, Length, Length, LengthRow).
 setConstrains(Board, LengthRow, Length, LengthRow):-
     % cell that appears in the first line, last column
     NewIndex is LengthRow + 1,
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
-    % cells between first and last line in the last column
+    LastRowFirstColumn is Length - LengthRow + 1,
+    Index =:= LastRowFirstColumn,
+    NewIndex is Index + 1,
+    setConstrains(Board, NewIndex, Length, LengthRow).
+setConstrains(Board, Index, Length, LengthRow):-
+    % cells between first and last line in the last column (excluded)
     0 =:= mod(Index, LengthRow),
     NewIndex is Index + 1,
 
@@ -84,6 +75,24 @@ setConstrains(Board, Index, Length, LengthRow):-
     (
         CurrElem #= UpperElem
         #\/ CurrElem #= BelowElem
+    ),
+    setConstrains(Board, NewIndex, Length, LengthRow).
+setConstrains(Board, Index, Length, LengthRow):-
+    % cells in the last row between first and last columns (excluded)
+    LastRowIndex is Length - LengthRow,
+    Index > LastRowIndex,
+    NewIndex is Index + 1,
+
+    LeftIndex is Index - 1,
+    RightIndex is Index + 1,
+
+    element(Index, Board, CurrElem),
+    element(LeftIndex, Board, LeftElem),
+    element(RightIndex, Board, RightElem),
+
+    (
+        CurrElem #= LeftElem
+        #\/ CurrElem #= RightElem
     ),
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
