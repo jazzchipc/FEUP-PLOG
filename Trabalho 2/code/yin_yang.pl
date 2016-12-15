@@ -94,14 +94,17 @@ setConstrains(Board, Index, Length, LengthRow):-
 
     UpperIndex is Index - LengthRow,
     BelowIndex is Index + LengthRow,
+    LeftIndex is Index - 1,
 
     element(Index, Board, CurrElem),
     element(UpperIndex, Board, UpperElem),
     element(BelowIndex, Board, BelowElem),
+    element(LeftIndex, Board, LeftElem),
 
     (
         CurrElem #= UpperElem
         #\/ CurrElem #= BelowElem
+        #\/ CurrElem #= LeftElem
     ),
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
@@ -112,14 +115,17 @@ setConstrains(Board, Index, Length, LengthRow):-
 
     LeftIndex is Index - 1,
     RightIndex is Index + 1,
+    UpperIndex is Index - LengthRow,
 
     element(Index, Board, CurrElem),
     element(LeftIndex, Board, LeftElem),
     element(RightIndex, Board, RightElem),
+    element(UpperIndex, Board, UpperElem),
 
     (
         CurrElem #= LeftElem
         #\/ CurrElem #= RightElem
+        #\/ CurrElem #= UpperElem
     ),
     setConstrains(Board, NewIndex, Length, LengthRow).
 setConstrains(Board, Index, Length, LengthRow):-
