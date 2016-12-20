@@ -46,14 +46,17 @@ yin_yang_manual(Board, Length):-
     LengthRow is round(LengthRowAux),
     
     domain(Board, 0, 1),
-    setConstrains(Board, 1, BoardLength, LengthRow),
+    setConstrains(Board, 1, BoardLength, LengthRow, NList),
+    count(2, NList, #>, 2),
     labeling([], Board),
+    write(NList), nl,
 
     display_board(Board, LengthRow, 1).
 
 % cell that ends predicate. Last cell in the board
-setConstrains(Board, Length, Length, LengthRow).
-setConstrains(Board, LengthRow, Length, LengthRow):-
+setConstrains(Board, Length, Length, LengthRow, []).
+
+setConstrains(Board, LengthRow, Length, LengthRow, [N|Ns]):-
     % cell that appears in the first row, last column
     NewIndex is LengthRow + 1,
 
@@ -65,11 +68,14 @@ setConstrains(Board, LengthRow, Length, LengthRow):-
     element(BelowIndex, Board, BelowElem),
 
     (
-        CurrElem #= LeftElem
-        #\/ CurrElem #= BelowElem
+        CurrElem #= LeftElem #<=>B,
+        CurrElem #= BelowElem #<=>C,
+        N #= B+C,
+        N #>= 1 
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow).
-setConstrains(Board, Index, Length, LengthRow):-
+    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+
+setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     % cell that appears in the last row, first column
     LastRowFirstColumn is Length - LengthRow + 1,
     Index =:= LastRowFirstColumn,
@@ -83,11 +89,14 @@ setConstrains(Board, Index, Length, LengthRow):-
     element(RightIndex, Board, RightElem),
 
     (
-        CurrElem #= UpperElem
-        #\/ CurrElem #= RightElem
+        CurrElem #= UpperElem #<=>B,
+        CurrElem #= RightElem #<=>C,
+        N #= B+C,
+        N #>= 1
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow).
-setConstrains(Board, Index, Length, LengthRow):-
+    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+
+setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     % cells between first and last line in the last column (excluded)
     0 =:= mod(Index, LengthRow),
     NewIndex is Index + 1,
@@ -102,12 +111,15 @@ setConstrains(Board, Index, Length, LengthRow):-
     element(LeftIndex, Board, LeftElem),
 
     (
-        CurrElem #= UpperElem
-        #\/ CurrElem #= BelowElem
-        #\/ CurrElem #= LeftElem
+        CurrElem #= UpperElem #<=> B,
+        CurrElem #= BelowElem #<=> C,
+        CurrElem #= LeftElem #<=> D,
+        N #= B + C + D,
+        N #>= 1
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow).
-setConstrains(Board, Index, Length, LengthRow):-
+    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+
+setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     % cells in the last row between first and last columns (excluded)
     LastRowIndex is Length - LengthRow,
     Index > LastRowIndex,
@@ -123,12 +135,15 @@ setConstrains(Board, Index, Length, LengthRow):-
     element(UpperIndex, Board, UpperElem),
 
     (
-        CurrElem #= LeftElem
-        #\/ CurrElem #= RightElem
-        #\/ CurrElem #= UpperElem
+        CurrElem #= LeftElem #<=> B, 
+        CurrElem #= RightElem #<=> C,
+        CurrElem #= UpperElem #<=> D,
+        N #= B + C + D,
+        N #>= 1
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow).
-setConstrains(Board, Index, Length, LengthRow):-
+    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+
+setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     % intermediate board cells
     element(Index, Board, CurrElem),
     NextIndex is Index + 1,
@@ -139,14 +154,16 @@ setConstrains(Board, Index, Length, LengthRow):-
     element(NextRowPlus, Board, ElemSE),
     
     (
-        CurrElem #= ElemRight
-        #\/ CurrElem #= ElemBelow
+        CurrElem #= ElemRight #<=> B,
+        CurrElem #= ElemBelow #<=> C,
+        N #= B + C,
+        N #>= 1
     ),
 
     nvalue(2, [CurrElem, ElemRight, ElemBelow, ElemSE]),
 
     NewIndex is Index + 1,
-    setConstrains(Board, NewIndex, Length, LengthRow).
+    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
 display_board([], _, _).
 display_board([X|Xs], LengthRow, Index):-
