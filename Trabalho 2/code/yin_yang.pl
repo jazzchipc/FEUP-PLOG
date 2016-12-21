@@ -47,7 +47,7 @@ yin_yang_manual(Board, Length):-
     
     domain(Board, 0, 1),
     setConstrains(Board, 1, BoardLength, LengthRow, NList),
-    count(1, NList, #<, 4),
+    count(1, NList, #<, 5),
     labeling([], Board),
     write(NList), nl,
 
@@ -63,6 +63,7 @@ setConstrains(Board, Length, Length, LengthRow, [N]):-
     element(LeftIndex, Board, LeftElem),
     element(UpperIndex, Board, UpperElem),
 
+
     (
         CurrElem #= LeftElem #<=>B,
         CurrElem #= UpperElem #<=>C,
@@ -76,10 +77,12 @@ setConstrains(Board, 1, Length, LengthRow, [N|Ns]):-
 
     RightIndex is 1 + 1,
     BelowIndex is 1 + LengthRow,
+    SEIndex is BelowIndex + 1,
 
     element(1, Board, CurrElem),
     element(RightIndex, Board, RightElem),
     element(BelowIndex, Board, BelowElem),
+    element(SEIndex, Board, SEElem),
 
     (
         CurrElem #= RightElem #<=>B,
@@ -87,6 +90,10 @@ setConstrains(Board, 1, Length, LengthRow, [N|Ns]):-
         N #= B+C,
         N #>= 1 
     ),
+
+    % special case for 2x2 boards
+    nvalue(2, [CurrElem, RightElem, BelowElem, SEElem]),
+
     setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
 setConstrains(Board, LengthRow, Length, LengthRow, [N|Ns]):-
