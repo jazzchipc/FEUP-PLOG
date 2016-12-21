@@ -47,14 +47,14 @@ yin_yang_manual(Board, Length):-
     
     domain(Board, 0, 1),
     setConstrains(Board, 1, BoardLength, LengthRow, NList),
-    count(2, NList, #>, 2),
+    count(1, NList, #<, 4),
     labeling([], Board),
     write(NList), nl,
 
     display_board(Board, LengthRow, 1).
 
 % cell that ends predicate. Last cell in the board
-setConstrains(Board, Length, Length, LengthRow, []):-
+setConstrains(Board, Length, Length, LengthRow, [N]):-
     % cell that appears in the last row, last column (X = Last, Y = Last)
     LeftIndex is Length - 1,
     UpperIndex is Length - LengthRow,
