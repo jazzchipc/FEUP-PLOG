@@ -231,11 +231,22 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     BelowIndex is Index + LengthRow,
     LeftIndex is Index - 1,
 
+    NWIndex is UpperIndex - 1,
+    NEIndex is UpperIndex + 1,
+    SWIndex is BelowIndex - 1,
+    SEIndex is BelowIndex + 1,
+
     element(Index, Board, CurrElem),
     element(UpperIndex, Board, UpperElem),
     element(RightIndex, Board, RightElem),
     element(BelowIndex, Board, BelowElem),
     element(LeftIndex, Board, LeftElem),
+
+    element(NWIndex, Board, NWElem),
+    element(NEIndex, Board, NEElem),
+    element(SWIndex, Board, SWElem),
+    element(SEIndex, Board, SEElem),
+
 
     (
         CurrElem #= UpperElem #<=> B,
@@ -246,7 +257,17 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
         N #>= 1
     ),
 
-    nvalue(2, [CurrElem, UpperElem, RightElem, BelowElem, LeftElem]),
+    % top left
+    nvalue(2, [CurrElem, UpperElem, NWElem, LeftElem]),
+
+    % top right
+    nvalue(2, [CurrElem, UpperElem, NEElem, RightElem]),
+
+    % bottom left
+    nvalue(2, [CurrElem, BelowElem, SWElem, LeftElem]),
+
+    %bottom right
+    nvalue(2, [CurrElem, BelowElem, SEElem, RightElem]),
 
     setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
