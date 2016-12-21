@@ -54,10 +54,43 @@ yin_yang_manual(Board, Length):-
     display_board(Board, LengthRow, 1).
 
 % cell that ends predicate. Last cell in the board
-setConstrains(Board, Length, Length, LengthRow, []).
+setConstrains(Board, Length, Length, LengthRow, []):-
+    % cell that appears in the last row, last column (X = Last, Y = Last)
+    LeftIndex is Length - 1,
+    UpperIndex is Length - LengthRow,
+
+    element(Length, Board, CurrElem),
+    element(LeftIndex, Board, LeftElem),
+    element(UpperIndex, Board, UpperElem),
+
+    (
+        CurrElem #= LeftElem #<=>B,
+        CurrElem #= UpperElem #<=>C,
+        N #= B+C,
+        N #>= 1 
+    ).
+
+setConstrains(Board, 1, Length, LengthRow, [N|Ns]):-
+    % cell that appears in the first row, first column (X = 0, Y = 0)
+    NewIndex is 1 + 1,
+
+    RightIndex is 1 + 1,
+    BelowIndex is 1 + LengthRow,
+
+    element(1, Board, CurrElem),
+    element(RightIndex, Board, RightElem),
+    element(BelowIndex, Board, BelowElem),
+
+    (
+        CurrElem #= RightElem #<=>B,
+        CurrElem #= BelowElem #<=>C,
+        N #= B+C,
+        N #>= 1 
+    ),
+    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
 setConstrains(Board, LengthRow, Length, LengthRow, [N|Ns]):-
-    % cell that appears in the first row, last column
+    % cell that appears in the first row, last column (X = Last, Y = 0)
     NewIndex is LengthRow + 1,
 
     LeftIndex is LengthRow - 1,
@@ -76,7 +109,7 @@ setConstrains(Board, LengthRow, Length, LengthRow, [N|Ns]):-
     setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
 setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
-    % cell that appears in the last row, first column
+    % cell that appears in the last row, first column (X = 0, Y = Last)
     LastRowFirstColumn is Length - LengthRow + 1,
     Index =:= LastRowFirstColumn,
     NewIndex is Index + 1,
@@ -97,7 +130,7 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
 setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
-    % cells between first and last line in the last column (excluded)
+    % cells between first and last line in the last column (excluded) (X = Last, Y = [1, Last - 1]) (Right side)
     0 =:= mod(Index, LengthRow),
     NewIndex is Index + 1,
 
@@ -120,7 +153,7 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
 setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
-    % cells in the last row between first and last columns (excluded)
+    % cells in the last row between first and last columns (excluded) (X = [1, Last - 1], Y = Last) (Below Side)
     LastRowIndex is Length - LengthRow,
     Index > LastRowIndex,
     NewIndex is Index + 1,
@@ -144,25 +177,77 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
 setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
-    % intermediate board cells
+    % cells in the first column between first and last rows (excluded) (X = 0, Y = [1, Last - 1]) (Left Side)
+    CheckIndex is Index - 1,
+    0 =:= mod(CheckIndex, LengthRow),
+    NewIndex is Index + 1,
+
+    RightIndex is Index + 1,
+    UpperIndex is Index - LengthRow,
+    BelowIndex is Index + LengthRow,
+
     element(Index, Board, CurrElem),
-    NextIndex is Index + 1,
-    element(NextIndex, Board, ElemRight),
-    NextRow is Index + LengthRow,
-    element(NextRow, Board, ElemBelow),
-    NextRowPlus is NextRow + 1,
-    element(NextRowPlus, Board, ElemSE),
-    
+    element(RightIndex, Board, RightElem),
+    element(UpperIndex, Board, UpperElem),
+    element(BelowIndex, Board, BelowElem),
+
     (
-        CurrElem #= ElemRight #<=> B,
-        CurrElem #= ElemBelow #<=> C,
-        N #= B + C,
+        CurrElem #= UpperElem #<=> B,
+        CurrElem #= RightElem #<=> C,
+        CurrElem #= BelowElem #<=> D,
+        N #= B + C + D,
+        N #>= 1
+    ),
+    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+
+setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
+    % cells in the first line between first and last columns (excluded) (X = [1, Last - 1], Y = 0) (Upper Side)
+    Index < LengthRow,
+    NewIndex is Index + 1,
+
+    LeftIndex is Index - 1,
+    BelowIndex is Index + LengthRow,
+    RightIndex is Index + 1,
+
+    element(Index, Board, CurrElem),
+    element(LeftIndex, Board, LeftElem),
+    element(BelowIndex, Board, BelowElem),
+    element(RightIndex, Board, RightElem),
+
+    (
+        CurrElem #= LeftElem #<=> B,
+        CurrElem #= BelowElem #<=> C,
+        CurrElem #= RightElem #<=> D,
+        N #= B + C + D,
+        N #>= 1
+    ),
+    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+
+setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
+    NewIndex is Index + 1,
+
+    UpperIndex is Index - LengthRow,
+    RightIndex is Index + 1,
+    BelowIndex is Index + LengthRow,
+    LeftIndex is Index - 1,
+
+    element(Index, Board, CurrElem),
+    element(UpperIndex, Board, UpperElem),
+    element(RightIndex, Board, RightElem),
+    element(BelowIndex, Board, BelowElem),
+    element(LeftIndex, Board, LeftElem),
+
+    (
+        CurrElem #= UpperElem #<=> B,
+        CurrElem #= RightElem #<=> C,
+        CurrElem #= BelowElem #<=> D,
+        CurrElem #= LeftElem #<=> E,
+        N #= B + C + D + E,
         N #>= 1
     ),
 
-    nvalue(2, [CurrElem, ElemRight, ElemBelow, ElemSE]),
+    nvalue(2, [CurrElem, UpperElem, RightElem, BelowElem, LeftElem]),
 
-    NewIndex is Index + 1,
     setConstrains(Board, NewIndex, Length, LengthRow, Ns).
 
 display_board([], _, _).
