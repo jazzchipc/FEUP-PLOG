@@ -46,15 +46,31 @@ yin_yang_manual(Board, Length):-
     LengthRow is round(LengthRowAux),
     
     domain(Board, 0, 1),
-    setConstrains(Board, 1, BoardLength, LengthRow, NList),
-    count(1, NList, #<, 5),
+    setConstrains(Board, 1, BoardLength, LengthRow, [], []),
+
     labeling([], Board),
-    write(NList), nl,
 
     display_board(Board, LengthRow, 1).
 
+setEulerPathConstraints(Degrees0, Degrees1):-
+    %% apply Euler path to 0s
+    count(1, Degrees0, #=, CountDegree1of0),
+    count(3, Degrees0, #=, CountDegree3of0),
+
+    count(0, Degrees0, #=, 0),
+
+    CountDegree1of0 + CountDegree3of0 #= 2,
+
+    %% apply Euler path to 1s
+    count(1, Degrees1, #=, CountDegree1of1),
+    count(3, Degrees1, #=, CountDegree3of1),
+
+    count(0, Degrees1, #=, 0),
+
+    CountDegree1of1 + CountDegree3of1 #= 2.
+
 % cell that ends predicate. Last cell in the board
-setConstrains(Board, Length, Length, LengthRow, [N]):-
+setConstrains(Board, Length, Length, LengthRow, Degrees0, Degrees1):-
     % cell that appears in the last row, last column (X = Last, Y = Last)
     LeftIndex is Length - 1,
     UpperIndex is Length - LengthRow,
@@ -62,16 +78,16 @@ setConstrains(Board, Length, Length, LengthRow, [N]):-
     element(Length, Board, CurrElem),
     element(LeftIndex, Board, LeftElem),
     element(UpperIndex, Board, UpperElem),
-
-
     (
         CurrElem #= LeftElem #<=>B,
         CurrElem #= UpperElem #<=>C,
-        N #= B+C,
-        N #>= 1 
-    ).
+        N #= B+C
+    ),
+     
+    ((CurrElem #= 0, setEulerPathConstraints([N|Degrees0], Degrees1));
+    (CurrElem #= 1, setEulerPathConstraints(Degrees0, [N|Degrees1]))).
 
-setConstrains(Board, 1, Length, LengthRow, [N|Ns]):-
+setConstrains(Board, 1, Length, LengthRow, Degrees0, Degrees1):-
     % cell that appears in the first row, first column (X = 0, Y = 0)
     NewIndex is 1 + 1,
 
@@ -87,16 +103,16 @@ setConstrains(Board, 1, Length, LengthRow, [N|Ns]):-
     (
         CurrElem #= RightElem #<=>B,
         CurrElem #= BelowElem #<=>C,
-        N #= B+C,
-        N #>= 1 
+        N #= B+C
     ),
 
     % special case for 2x2 boards
     nvalue(2, [CurrElem, RightElem, BelowElem, SEElem]),
 
-    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+    ((CurrElem #= 0, setConstrains(Board, NewIndex, Length, LengthRow, [N|Degrees0], Degrees1));
+    (CurrElem #= 1, setConstrains(Board, NewIndex, Length, LengthRow, Degrees0, [N|Degrees1]))).
 
-setConstrains(Board, LengthRow, Length, LengthRow, [N|Ns]):-
+setConstrains(Board, LengthRow, Length, LengthRow, Degrees0, Degrees1):-
     % cell that appears in the first row, last column (X = Last, Y = 0)
     NewIndex is LengthRow + 1,
 
@@ -110,12 +126,13 @@ setConstrains(Board, LengthRow, Length, LengthRow, [N|Ns]):-
     (
         CurrElem #= LeftElem #<=>B,
         CurrElem #= BelowElem #<=>C,
-        N #= B+C,
-        N #>= 1 
+        N #= B+C
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+    
+    ((CurrElem #= 0, setConstrains(Board, NewIndex, Length, LengthRow, [N|Degrees0], Degrees1));
+    (CurrElem #= 1, setConstrains(Board, NewIndex, Length, LengthRow, Degrees0, [N|Degrees1]))).
 
-setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
+setConstrains(Board, Index, Length, LengthRow, Degrees0, Degrees1):-
     % cell that appears in the last row, first column (X = 0, Y = Last)
     LastRowFirstColumn is Length - LengthRow + 1,
     Index =:= LastRowFirstColumn,
@@ -131,12 +148,13 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     (
         CurrElem #= UpperElem #<=>B,
         CurrElem #= RightElem #<=>C,
-        N #= B+C,
-        N #>= 1
+        N #= B+C
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+    
+    ((CurrElem #= 0, setConstrains(Board, NewIndex, Length, LengthRow, [N|Degrees0], Degrees1));
+    (CurrElem #= 1, setConstrains(Board, NewIndex, Length, LengthRow, Degrees0, [N|Degrees1]))).
 
-setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
+setConstrains(Board, Index, Length, LengthRow, Degrees0, Degrees1):-
     % cells between first and last line in the last column (excluded) (X = Last, Y = [1, Last - 1]) (Right side)
     0 =:= mod(Index, LengthRow),
     NewIndex is Index + 1,
@@ -154,12 +172,13 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
         CurrElem #= UpperElem #<=> B,
         CurrElem #= BelowElem #<=> C,
         CurrElem #= LeftElem #<=> D,
-        N #= B + C + D,
-        N #>= 1
+        N #= B + C + D
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+    
+    ((CurrElem #= 0, setConstrains(Board, NewIndex, Length, LengthRow, [N|Degrees0], Degrees1));
+    (CurrElem #= 1, setConstrains(Board, NewIndex, Length, LengthRow, Degrees0, [N|Degrees1]))).
 
-setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
+setConstrains(Board, Index, Length, LengthRow, Degrees0, Degrees1):-
     % cells in the last row between first and last columns (excluded) (X = [1, Last - 1], Y = Last) (Below Side)
     LastRowIndex is Length - LengthRow,
     Index > LastRowIndex,
@@ -178,12 +197,13 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
         CurrElem #= LeftElem #<=> B, 
         CurrElem #= RightElem #<=> C,
         CurrElem #= UpperElem #<=> D,
-        N #= B + C + D,
-        N #>= 1
+        N #= B + C + D
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+    
+    ((CurrElem #= 0, setConstrains(Board, NewIndex, Length, LengthRow, [N|Degrees0], Degrees1));
+    (CurrElem #= 1, setConstrains(Board, NewIndex, Length, LengthRow, Degrees0, [N|Degrees1]))).
 
-setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
+setConstrains(Board, Index, Length, LengthRow, Degrees0, Degrees1):-
     % cells in the first column between first and last rows (excluded) (X = 0, Y = [1, Last - 1]) (Left Side)
     CheckIndex is Index - 1,
     0 =:= mod(CheckIndex, LengthRow),
@@ -202,12 +222,13 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
         CurrElem #= UpperElem #<=> B,
         CurrElem #= RightElem #<=> C,
         CurrElem #= BelowElem #<=> D,
-        N #= B + C + D,
-        N #>= 1
+        N #= B + C + D
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+    
+    ((CurrElem #= 0, setConstrains(Board, NewIndex, Length, LengthRow, [N|Degrees0], Degrees1));
+    (CurrElem #= 1, setConstrains(Board, NewIndex, Length, LengthRow, Degrees0, [N|Degrees1]))).
 
-setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
+setConstrains(Board, Index, Length, LengthRow, Degrees0, Degrees1):-
     % cells in the first line between first and last columns (excluded) (X = [1, Last - 1], Y = 0) (Upper Side)
     Index < LengthRow,
     NewIndex is Index + 1,
@@ -225,12 +246,13 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
         CurrElem #= LeftElem #<=> B,
         CurrElem #= BelowElem #<=> C,
         CurrElem #= RightElem #<=> D,
-        N #= B + C + D,
-        N #>= 1
+        N #= B + C + D
     ),
-    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+    
+    ((CurrElem #= 0, setConstrains(Board, NewIndex, Length, LengthRow, [N|Degrees0], Degrees1));
+    (CurrElem #= 1, setConstrains(Board, NewIndex, Length, LengthRow, Degrees0, [N|Degrees1]))).
 
-setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
+setConstrains(Board, Index, Length, LengthRow, Degrees0, Degrees1):-
     NewIndex is Index + 1,
 
     UpperIndex is Index - LengthRow,
@@ -260,8 +282,7 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
         CurrElem #= RightElem #<=> C,
         CurrElem #= BelowElem #<=> D,
         CurrElem #= LeftElem #<=> E,
-        N #= B + C + D + E,
-        N #>= 1
+        N #= B + C + D + E
     ),
 
     % top left
@@ -276,7 +297,8 @@ setConstrains(Board, Index, Length, LengthRow, [N|Ns]):-
     %bottom right
     nvalue(2, [CurrElem, BelowElem, SEElem, RightElem]),
 
-    setConstrains(Board, NewIndex, Length, LengthRow, Ns).
+    ((CurrElem #= 0, setConstrains(Board, NewIndex, Length, LengthRow, [N|Degrees0], Degrees1));
+    (CurrElem #= 1, setConstrains(Board, NewIndex, Length, LengthRow, Degrees0, [N|Degrees1]))).
 
 display_board([], _, _).
 display_board([X|Xs], LengthRow, Index):-
