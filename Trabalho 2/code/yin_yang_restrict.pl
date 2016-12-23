@@ -4,7 +4,6 @@
 /*
 0 --> black
 1 --> white
-
 LastEvaluatorNumber --> last column of penultima line
 */
 
@@ -26,6 +25,13 @@ test_board_2x2([
     B1, B2
 ]).
 
+reset_timer :- statistics(walltime,_).	
+print_time :-
+	statistics(walltime,[_,T]),
+	TS is ((T//10)*10)/1000,
+	nl, write('Time: '), write(TS), write('s'), nl, nl.
+
+
 yin_yang_auto(Board):-
     test_board_4x4(Board),
     length(Board, Length),
@@ -34,7 +40,10 @@ yin_yang_auto(Board):-
     
     domain(Board, 0, 1),
     setConstrains(Board, 1, Length, LengthRow),
+    reset_timer,
     labeling([], Board),
+    print_time,
+    fd_statistics,
 
     display_board(Board, LengthRow, 1).
 
@@ -48,7 +57,10 @@ yin_yang_manual(Board, Length):-
     domain(Board, 0, 1),
     setConstrains(Board, 1, BoardLength, LengthRow, [], []),
 
+    reset_timer,
     labeling([], Board),
+    print_time,
+    fd_statistics,
 
     display_board(Board, LengthRow, 1).
 
